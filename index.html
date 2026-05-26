@@ -1045,7 +1045,6 @@ if (sales === "李彥伯") {
     window.calculateCar = function() {
       const date = getValue("carDate");
       const name = getValue("carName") || "未命名車輛";
-      const note = getValue("carNote");
 
       const buyPrice = getNumber("carBuyPrice");
       const repairCost = getNumber("carRepairCost");
@@ -1097,7 +1096,6 @@ if (sales === "李彥伯") {
         type: "中古車投資",
         date,
         name,
-        note,
         buyPrice,
         repairCost,
         otherCost,
@@ -1442,7 +1440,6 @@ function mobileCalculateCase() {
 function mobileCalculateCar() {
   const date = mGetValue("mCarDate");
   const name = mGetValue("mCarName") || "未命名車輛";
-  const note = mGetValue("mCarNote");
   const buyPrice = mGetNumber("mCarBuyPrice");
   const repairCost = mGetNumber("mCarRepairCost");
   const otherCost = mGetNumber("mCarOtherCost");
@@ -1493,7 +1490,6 @@ function mobileCalculateCar() {
     type: "中古車投資",
     date,
     name,
-    note,
     buyPrice,
     repairCost,
     otherCost,
