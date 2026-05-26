@@ -184,6 +184,12 @@
       gap: 14px;
     }
 
+    .car-result-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+    }
+
     .result-box {
       background: #f5f7fa;
       border-radius: 14px;
@@ -624,7 +630,7 @@
       <div class="card result-card">
         <h2>中古車計算結果</h2>
 
-        <div class="result-grid">
+        <div class="car-result-grid">
           <div class="result-box">
             <span>車輛淨利</span>
             <b id="carProfitText">$0</b>
@@ -639,6 +645,11 @@
             <span>李彥伯投入比例</span>
             <b id="carBoyfriendRateText">0%</b>
           </div>
+
+          <div class="result-box">
+            <span>李承峰投入比例</span>
+            <b id="carBrotherRateText">0%</b>
+        </div>
 
           <div class="result-box dark">
             <span>李彥伯分潤</span>
@@ -1066,6 +1077,7 @@ style="margin-left:10px;width:auto;">
       document.getElementById("carProfitText").textContent = money(profit);
       document.getElementById("carInvestText").textContent = money(totalInvest);
       document.getElementById("carBoyfriendRateText").textContent = (boyfriendRate * 100).toFixed(1) + "%";
+      document.getElementById("carBrotherRateText").textContent = (brotherRate * 100).toFixed(1) + "%";
       document.getElementById("carBoyfriendShareText").textContent = money(boyfriendShare);
       document.getElementById("carBrotherShareText").textContent = money(brotherShare);
 
@@ -1461,6 +1473,7 @@ function mobileCalculateCar() {
     <div class="result-box"><span>車輛淨利</span><b>${money(profit)}</b></div>
     <div class="result-box"><span>總投入金額</span><b>${money(totalInvest)}</b></div>
     <div class="result-box"><span>李彥伯投入比例</span><b>${(boyfriendRate * 100).toFixed(1)}%</b></div>
+    <div class="result-box"><span>李承峰投入比例</span><b>${(brotherRate * 100).toFixed(1)}%</b></div>
     <div class="result-box dark"><span>李彥伯分潤</span><b>${money(boyfriendShare)}</b></div>
     <div class="result-box"><span>李承峰分潤</span><b>${money(brotherShare)}</b></div>
   `;
