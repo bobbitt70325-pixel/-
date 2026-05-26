@@ -117,9 +117,6 @@ function calculate() {
     chengfengMoney = baseShare;
   }
 
-  document.getElementById("caseStatus").innerText = statusText;
-  document.getElementById("caseStatus").className = getStatusClass(netProfit);
-
   document.getElementById("netProfit").innerText = formatMoney(netProfit);
   document.getElementById("equipmentFund").innerText = formatMoney(equipmentFund);
   document.getElementById("salesBonus").innerText = formatMoney(salesBonus);
@@ -131,7 +128,6 @@ function calculate() {
   if (netProfit > 0) {
     formulaHTML = `
       <strong>計算過程：</strong><br>
-      案件狀態：獲利<br>
       案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
       設備資金 = 案件淨利 ${formatMoney(netProfit)} × ${equipmentRate}% = ${formatMoney(equipmentFund)}<br>
       業務獎金 = 案件淨利 ${formatMoney(netProfit)} × ${salesRate}% = ${formatMoney(salesBonus)}<br>
@@ -146,7 +142,6 @@ function calculate() {
   if (netProfit === 0) {
     formulaHTML = `
       <strong>計算過程：</strong><br>
-      案件狀態：打平<br>
       案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
       因本案剛好打平，所以不提撥設備資金、不發放業務獎金，雙方分潤皆為 ${formatMoney(0)}。
     `;
@@ -155,7 +150,6 @@ function calculate() {
   if (netProfit < 0) {
     formulaHTML = `
       <strong>計算過程：</strong><br>
-      案件狀態：賠本<br>
       案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
       因本案為虧損案件，所以不提撥設備資金、不發放業務獎金。<br>
       虧損由兩人平均承擔：${formatMoney(netProfit)} ÷ 2 = ${formatMoney(baseShare)}<br>
@@ -217,7 +211,6 @@ function renderRecords() {
           <button class="delete-btn" onclick="deleteRecord(${record.id})">刪除</button>
         </td>
         <td>${record.date}</td>
-        <td class="${statusClass}">${record.status}</td>
         <td>${record.caseName}</td>
         <td>${record.customerName}</td>
         <td>${record.carPlate}</td>
@@ -302,7 +295,6 @@ function exportCSV() {
 
   const header = [
     "日期",
-    "狀態",
     "案件名稱",
     "客戶名稱",
     "車牌",
@@ -319,7 +311,6 @@ function exportCSV() {
   const rows = records.map(function(record) {
     return [
       record.date,
-      record.status,
       record.caseName,
       record.customerName,
       record.carPlate,
