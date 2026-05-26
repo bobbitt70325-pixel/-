@@ -1,290 +1,1275 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>小李車庫 分潤管理系統</title>
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", Arial, sans-serif;
+      background: #eef0f3;
+      color: #000;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 22px 40px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #5b6472;
+      font-size: 14px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin: 22px 0;
+    }
+
+    .nav button {
+      border: 0;
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .nav button.active {
+      background: #111;
+      color: #fff;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.04);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    h3 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 14px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #8aa7d8;
+      background: #eef4ff;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-weight: 900;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .btn-dark {
+      background: #111;
+      color: #fff;
+    }
+
+    .btn-blue {
+      background: #2f6de0;
+      color: #fff;
+    }
+
+    .btn-red {
+      background: #dc2626;
+      color: #fff;
+      width: auto;
+    }
+
+    .rule-item {
+      padding: 0 0 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .rule-item strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 7px;
+    }
+
+    .rule-item p {
+      margin: 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 14px;
+      background: #f1f3f6;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .result-card {
+      margin-top: 20px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .result-box {
+      background: #f5f7fa;
+      border-radius: 14px;
+      padding: 18px 16px;
+      min-height: 82px;
+    }
+
+    .result-box.dark {
+      background: #111;
+      color: #fff;
+    }
+
+    .result-box span {
+      display: block;
+      color: #697282;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .result-box.dark span {
+      color: #d7dce5;
+    }
+
+    .result-box b {
+      font-size: 21px;
+    }
+
+    .process {
+      margin-top: 18px;
+      padding: 20px;
+      border-radius: 14px;
+      background: #f5f7fa;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .process b {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .summary-box {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.04);
+    }
+
+    .summary-box span {
+      color: #697282;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .summary-box b {
+      display: block;
+      margin-top: 8px;
+      font-size: 26px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      overflow: hidden;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 13px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #111;
+      color: #fff;
+    }
+
+    @media (max-width: 900px) {
+      .two-col,
+      .form-grid,
+      .result-grid,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .app {
+        padding: 16px;
+      }
+
+      .nav {
+        flex-wrap: wrap;
+      }
+    }
+
+
+    /* 手機版：保留桌機版不動，只在手機寬度啟用分步流程 */
+    .mobile-app { display: none; }
+
+    .mobile-step-title {
+      font-size: 26px;
+      font-weight: 900;
+      margin: 0 0 8px;
+    }
+
+    .mobile-step-desc {
+      color: #5b6472;
+      line-height: 1.7;
+      margin: 0 0 18px;
+      font-size: 14px;
+    }
+
+    .mobile-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .mobile-choice-card {
+      border: 0;
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+      cursor: pointer;
+    }
+
+    .mobile-choice-card strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .mobile-choice-card span {
+      color: #5b6472;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .mobile-panel { display: none; }
+    .mobile-panel.active { display: block; }
+
+    .mobile-rule-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    }
+
+    .mobile-rule-card .rule-item:last-child { border-bottom: 0; }
+
+    .mobile-result-stack {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .mobile-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-light {
+      background: #fff;
+      color: #111;
+      border: 1px solid #cbd5e1;
+    }
+
+    @media (max-width: 900px) {
+      .desktop-app { display: none; }
+      .mobile-app {
+        display: block;
+        padding: 18px 16px 36px;
+      }
+
+      body { background: #eef0f3; }
+
+      .mobile-app h1 {
+        font-size: 26px;
+        line-height: 1.25;
+      }
+
+      .mobile-card {
+        background: #fff;
+        border-radius: 22px;
+        padding: 20px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+      }
+
+      .mobile-form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .mobile-progress {
+        display: flex;
+        gap: 6px;
+        margin: 18px 0;
+      }
+
+      .mobile-progress span {
+        flex: 1;
+        height: 6px;
+        border-radius: 999px;
+        background: #d7dce5;
+      }
+
+      .mobile-progress span.active { background: #111; }
+    }
+
+  </style>
 </head>
 
 <body>
+  <div class="app desktop-app">
+    <h1>小李車庫 分潤管理系統</h1>
+    <div class="subtitle">計算案件分潤、儲存紀錄、統計本月金額，方便後續做帳。</div>
 
-  <div class="mobile-page mobile-rule-page" id="mobileRulePage">
-    <div class="mobile-logo">小李車庫</div>
-    <h1>分潤制度說明</h1>
-
-    <div class="mobile-rules">
-      <div class="mobile-rule"><strong>設備 / 材料基金</strong><span>10%</span></div>
-      <div class="mobile-rule"><strong>業務獎金</strong><span>20%</span></div>
-      <div class="mobile-rule"><strong>剩餘利潤</strong><span>雙方對半</span></div>
-      <div class="mobile-rule"><strong>賠本案件</strong><span>共同承擔</span></div>
+    <div class="nav">
+      <button class="active" onclick="showPage('casePage', this)">一般案件</button>
+      <button onclick="showPage('carPage', this)">中古車投資</button>
+      <button onclick="showPage('recordsPage', this)">所有紀錄</button>
     </div>
 
-    <button onclick="goMobileInput()">開始計算</button>
-  </div>
-
-  <div class="mobile-page mobile-input-page" id="mobileInputPage">
-    <h1>輸入案件資料</h1>
-
-    <div class="mobile-card">
-      <label>案件日期</label>
-      <input id="mobileCaseDate" type="date">
-
-      <label>案件名稱</label>
-      <input id="mobileCaseName" type="text" placeholder="例如：安卓機">
-
-      <label>客戶名稱</label>
-      <input id="mobileCustomerName" type="text" placeholder="例如：林XX">
-
-      <label>車牌</label>
-      <input id="mobileCarPlate" type="text" placeholder="例如：ABC-1234">
-
-      <label>客戶收費</label>
-      <input id="mobileIncome" type="number" placeholder="例如：1000">
-
-      <label>總成本</label>
-      <input id="mobileCost" type="number" placeholder="例如：100">
-
-      <label>業務成交人</label>
-      <select id="mobileSalesOwner">
-        <option value="yanbo">李彥伯</option>
-        <option value="chengfeng">李承峰</option>
-        <option value="both">共同成交</option>
-      </select>
-
-      <button onclick="mobileCalculate()">開始計算</button>
-      <button class="back-btn" onclick="goMobileRule()">返回制度說明</button>
-    </div>
-  </div>
-
-  <div class="mobile-page mobile-result-page" id="mobileResultPage">
-    <h1>計算結果</h1>
-
-    <div class="mobile-result-main">
-      <div class="mobile-money-card black-card">
-        <span>李彥伯最後金額</span>
-        <strong id="mobileYanboMoney">$0</strong>
-      </div>
-
-      <div class="mobile-money-card">
-        <span>李承峰最後金額</span>
-        <strong id="mobileChengfengMoney">$0</strong>
-      </div>
-    </div>
-
-    <div class="mobile-result-small">
-      <div><span>案件淨利</span><strong id="mobileNetProfit">$0</strong></div>
-      <div><span>設備資金</span><strong id="mobileEquipmentFund">$0</strong></div>
-      <div><span>業務獎金</span><strong id="mobileSalesBonus">$0</strong></div>
-    </div>
-
-    <div id="mobileFormulaText" class="mobile-formula">請輸入資料後開始計算。</div>
-
-    <button onclick="saveRecord()">儲存本次案件</button>
-    <button class="back-btn" onclick="goMobileInput()">返回修改</button>
-  </div>
-
-  <main class="page" id="desktopSystem">
-    <section class="container">
-
-      <header class="header">
-        <h1>小李車庫 分潤管理系統</h1>
-        <p>計算案件分潤、儲存紀錄、統計本月金額，方便後續做帳。</p>
-      </header>
-
-      <div class="top-layout">
-
-        <section class="card">
+    <!-- 一般案件 -->
+    <section id="casePage" class="page active">
+      <div class="two-col">
+        <div class="card">
           <h2>輸入案件資料</h2>
 
-          <div class="form-row">
-            <div class="form-group">
+          <div class="form-grid">
+            <div>
               <label>案件日期</label>
               <input id="caseDate" type="date">
             </div>
 
-            <div class="form-group">
+            <div>
               <label>案件名稱</label>
-              <input id="caseName" type="text" placeholder="例如：安卓機">
+              <input id="caseName" placeholder="例如：安卓機">
             </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-group">
+            <div>
               <label>客戶名稱</label>
-              <input id="customerName" type="text" placeholder="例如：林XX">
+              <input id="caseCustomer" placeholder="例如：林XX">
             </div>
 
-            <div class="form-group">
+            <div>
               <label>車牌</label>
-              <input id="carPlate" type="text" placeholder="例如：ABC-1234">
+              <input id="casePlate" placeholder="例如：ABC-1234">
             </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-group">
+            <div>
               <label>客戶收費</label>
-              <input id="income" type="number" placeholder="例如：1000">
+              <input id="caseIncome" type="number" placeholder="例如：5000">
             </div>
 
-            <div class="form-group">
+            <div>
               <label>總成本</label>
-              <input id="cost" type="number" placeholder="例如：100">
+              <input id="caseCost" type="number" placeholder="例如：2000">
+            </div>
+
+            <div class="full">
+              <label>業務成交人</label>
+              <select id="caseSales">
+                <option value="李彥伯">李彥伯</option>
+                <option value="李承峰">李承峰</option>
+              </select>
             </div>
           </div>
 
-          <div class="form-group">
-            <label>業務成交人</label>
-            <select id="salesOwner">
-              <option value="yanbo">李彥伯</option>
-              <option value="chengfeng">李承峰</option>
-              <option value="both">共同成交</option>
-            </select>
-          </div>
+          <button class="btn btn-dark" onclick="calculateCase()">開始計算</button>
+          <button class="btn btn-blue" onclick="saveCase()">儲存本次案件</button>
+        </div>
 
-          <button onclick="desktopCalculate()">開始計算</button>
-          <button class="save-btn" onclick="saveRecord()">儲存本次案件</button>
-        </section>
-
-        <section class="card explanation">
+        <div class="card">
           <h2>分潤制度說明</h2>
 
-          <div class="step">
-            <h3>1. 先扣除所有成本</h3>
+          <div class="rule-item">
+            <strong>1. 先扣除所有成本</strong>
             <p>客戶收費扣掉材料、外包、運費、雜支後，才是案件真正淨利。</p>
           </div>
 
-          <div class="step">
-            <h3>2. 設備 / 材料基金 10%</h3>
-            <p>先從案件淨利中保留 10%，作為設備、工具更新、材料備貨與未來營運資金。</p>
+          <div class="rule-item">
+            <strong>2. 設備／材料基金 10%</strong>
+            <p>先從案件淨利中保留 10%，作為設備、工具更新、材料補貨與未來營運資金。</p>
           </div>
 
-          <div class="step">
-            <h3>3. 業務獎金 20%</h3>
-            <p>誰負責客戶聯繫、接洽、報價、溝通與成交，誰取得業務獎金；共同成交則兩人平分。</p>
+          <div class="rule-item">
+            <strong>3. 業務獎金 20%</strong>
+            <p>誰負責客戶聯繫、接洽、報價、溝通與成交，誰取得業務獎金。</p>
           </div>
 
-          <div class="step">
-            <h3>4. 剩餘利潤再對半分</h3>
-            <p>扣除設備資金與業務獎金後，剩餘利潤由李彥伯與李承峰各分配 50%。</p>
+          <div class="rule-item">
+            <strong>4. 剩餘利潤再對半分</strong>
+            <p>扣除設備基金與業務獎金後，剩餘利潤由李彥伯與李承峰各分配 50%。</p>
           </div>
 
-          <div class="step">
-            <h3>5. 賠本案件共同承擔</h3>
+          <div class="rule-item">
+            <strong>5. 賠本案件共同承擔</strong>
             <p>若案件虧損，則不提撥設備基金、不發放業務獎金，虧損金額由兩人平均承擔。</p>
           </div>
 
-          <div class="notice">
-            所有案件皆依照系統公式計算，避免感覺分帳，讓分潤公開透明。
-          </div>
-        </section>
-
+          <div class="note">所有案件皆依照系統公式計算，避免感覺分帳，讓分潤公開透明。</div>
+        </div>
       </div>
 
-      <section class="result-card">
+      <div class="card result-card">
         <h2>計算結果</h2>
 
         <div class="result-grid">
           <div class="result-box">
             <span>案件淨利</span>
-            <strong id="netProfit">$0</strong>
+            <b id="caseProfitText">$0</b>
           </div>
 
           <div class="result-box">
-            <span>設備資金</span>
-            <strong id="equipmentFund">$0</strong>
+            <span>設備基金</span>
+            <b id="caseFundText">$0</b>
           </div>
 
           <div class="result-box">
             <span>業務獎金</span>
-            <strong id="salesBonus">$0</strong>
+            <b id="caseBonusText">$0</b>
           </div>
 
-          <div class="result-box highlight">
+          <div class="result-box dark">
             <span>李彥伯最後金額</span>
-            <strong id="yanboMoney">$0</strong>
+            <b id="caseBoyfriendText">$0</b>
           </div>
 
           <div class="result-box">
             <span>李承峰最後金額</span>
-            <strong id="chengfengMoney">$0</strong>
+            <b id="caseBrotherText">$0</b>
           </div>
         </div>
 
-        <div id="formulaText" class="formula">
-          請輸入資料後開始計算。
+        <div class="process" id="caseProcess">
+          <b>計算過程：</b>
+          請輸入案件資料後按下「開始計算」。
         </div>
-      </section>
-
-      <section class="summary-card">
-        <h2>本月統計</h2>
-
-        <div class="summary-grid">
-          <div class="summary-box">
-            <span>本月總收費</span>
-            <strong id="monthIncome">$0</strong>
-          </div>
-
-          <div class="summary-box">
-            <span>本月總淨利</span>
-            <strong id="monthNetProfit">$0</strong>
-          </div>
-
-          <div class="summary-box">
-            <span>設備資金累積</span>
-            <strong id="monthEquipment">$0</strong>
-          </div>
-
-          <div class="summary-box highlight">
-            <span>李彥伯本月累積</span>
-            <strong id="monthYanbo">$0</strong>
-          </div>
-
-          <div class="summary-box">
-            <span>李承峰本月累積</span>
-            <strong id="monthChengfeng">$0</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="history-card">
-        <div class="history-title">
-          <h2>案件紀錄</h2>
-
-          <div class="history-actions">
-            <button class="export-btn" onclick="exportCSV()">匯出 CSV</button>
-            <button class="clear-btn" onclick="clearRecords()">清空紀錄</button>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>操作</th>
-                <th>日期</th>
-                <th>案件名稱</th>
-                <th>客戶</th>
-                <th>車牌</th>
-                <th>收費</th>
-                <th>成本</th>
-                <th>淨利</th>
-                <th>業務</th>
-                <th>設備資金</th>
-                <th>業務獎金</th>
-                <th>李彥伯</th>
-                <th>李承峰</th>
-              </tr>
-            </thead>
-
-            <tbody id="historyTable"></tbody>
-          </table>
-        </div>
-      </section>
-
+      </div>
     </section>
-  </main>
 
-  <script type="module" src="script.js"></script>
+    <!-- 中古車投資 -->
+    <section id="carPage" class="page">
+      <div class="two-col">
+        <div class="card">
+          <h2>新增中古車投資案件</h2>
+
+          <div class="form-grid">
+            <div>
+              <label>案件日期</label>
+              <input id="carDate" type="date">
+            </div>
+
+            <div>
+              <label>車輛名稱</label>
+              <input id="carName" placeholder="例如：Mazda 3">
+            </div>
+
+            <div>
+              <label>買入價格</label>
+              <input id="carBuyPrice" type="number" placeholder="例如：200000">
+            </div>
+
+            <div>
+              <label>整備成本</label>
+              <input id="carRepairCost" type="number" placeholder="例如：50000">
+            </div>
+
+            <div>
+              <label>其他成本</label>
+              <input id="carOtherCost" type="number" placeholder="例如：5000">
+            </div>
+
+            <div>
+              <label>賣出價格</label>
+              <input id="carSellPrice" type="number" placeholder="例如：320000">
+            </div>
+
+            <div>
+              <label>李彥伯投入金額</label>
+              <input id="carBoyfriendInvest" type="number" placeholder="例如：180000">
+            </div>
+
+            <div>
+              <label>李承峰投入金額</label>
+              <input id="carBrotherInvest" type="number" placeholder="例如：70000">
+            </div>
+
+            <div class="full">
+              <label>備註</label>
+              <textarea id="carNote" placeholder="例如：此車由李彥伯找車，李承峰負責部分電系整理"></textarea>
+            </div>
+          </div>
+
+          <button class="btn btn-dark" onclick="calculateCar()">開始計算</button>
+          <button class="btn btn-blue" onclick="saveCar()">儲存中古車案件</button>
+        </div>
+
+        <div class="card">
+          <h2>中古車分潤說明</h2>
+
+          <div class="rule-item">
+            <strong>1. 先計算車輛實際淨利</strong>
+            <p>賣出價格扣掉買入價格、整備成本、其他成本後，才是這台車真正賺到的金額。</p>
+          </div>
+
+          <div class="rule-item">
+            <strong>2. 依投入比例分潤</strong>
+            <p>因為每台車的投入金額不同，所以不採用 50/50，而是依照實際出資比例分配。</p>
+          </div>
+
+          <div class="rule-item">
+            <strong>3. 賠錢也依投入比例承擔</strong>
+            <p>若車輛最後虧損，則虧損金額也依照投入比例承擔。</p>
+          </div>
+
+          <div class="note">中古車投資屬於資金風險型案件，因此使用投入比例分潤最公平。</div>
+        </div>
+      </div>
+
+      <div class="card result-card">
+        <h2>中古車計算結果</h2>
+
+        <div class="result-grid">
+          <div class="result-box">
+            <span>車輛淨利</span>
+            <b id="carProfitText">$0</b>
+          </div>
+
+          <div class="result-box">
+            <span>總投入金額</span>
+            <b id="carInvestText">$0</b>
+          </div>
+
+          <div class="result-box">
+            <span>李彥伯投入比例</span>
+            <b id="carBoyfriendRateText">0%</b>
+          </div>
+
+          <div class="result-box dark">
+            <span>李彥伯分潤</span>
+            <b id="carBoyfriendShareText">$0</b>
+          </div>
+
+          <div class="result-box">
+            <span>李承峰分潤</span>
+            <b id="carBrotherShareText">$0</b>
+          </div>
+        </div>
+
+        <div class="process" id="carProcess">
+          <b>計算過程：</b>
+          請輸入中古車資料後按下「開始計算」。
+        </div>
+      </div>
+    </section>
+
+    <!-- 所有紀錄 -->
+    <section id="recordsPage" class="page">
+      <div class="summary-grid">
+        <div class="summary-box">
+          <span>總淨利</span>
+          <b id="totalProfit">$0</b>
+        </div>
+
+        <div class="summary-box">
+          <span>設備基金累積</span>
+          <b id="totalFund">$0</b>
+        </div>
+
+        <div class="summary-box">
+          <span>李彥伯累積</span>
+          <b id="totalBoyfriend">$0</b>
+        </div>
+
+        <div class="summary-box">
+          <span>李承峰累積</span>
+          <b id="totalBrother">$0</b>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>所有紀錄</h2>
+        <button class="btn btn-red" onclick="clearAllRecords()">清空所有紀錄</button>
+        <button class="btn btn-dark"
+onclick="downloadCSV()"
+style="margin-left:10px;width:auto;">
+下載 CSV
+</button>
+
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>類型</th>
+              <th>名稱</th>
+              <th>淨利</th>
+              <th>設備基金</th>
+              <th>業務獎金</th>
+              <th>李彥伯</th>
+              <th>李承峰</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- 手機版流程：只在手機寬度顯示，桌機版完全保留原本畫面 -->
+  <div class="mobile-app">
+    <h1>小李車庫 分潤管理系統</h1>
+    <div class="subtitle">手機版採用分步流程：選類型 → 看規則 → 填資料 → 看結果。</div>
+
+    <div class="mobile-progress">
+      <span id="mStep1" class="active"></span>
+      <span id="mStep2"></span>
+      <span id="mStep3"></span>
+      <span id="mStep4"></span>
+    </div>
+
+    <section id="mobileChoose" class="mobile-panel active">
+      <h2 class="mobile-step-title">選擇案件類型</h2>
+      <p class="mobile-step-desc">先選這筆要計算的是一般安裝案件，還是中古車買賣案件。</p>
+
+      <div class="mobile-choice-grid">
+        <button class="mobile-choice-card" onclick="mobileSelectType('case')">
+          <strong>一般案件</strong>
+          <span>安卓機、環景、音響、配件安裝等。會扣成本、設備基金、業務獎金後，剩餘利潤對半分。</span>
+        </button>
+
+        <button class="mobile-choice-card" onclick="mobileSelectType('car')">
+          <strong>中古車買賣</strong>
+          <span>買車、整理、轉售。依照李彥伯與李承峰的投入金額比例分潤。</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="mobileRules" class="mobile-panel">
+      <h2 class="mobile-step-title" id="mobileRulesTitle">分潤規則</h2>
+      <p class="mobile-step-desc">確認規則後，再進入輸入資料畫面。</p>
+
+      <div class="mobile-rule-card" id="mobileRulesContent"></div>
+
+      <div class="mobile-actions">
+        <button class="btn btn-dark" onclick="mobileGoForm()">開始填寫</button>
+        <button class="btn btn-light" onclick="mobileGoChoose()">返回選擇</button>
+      </div>
+    </section>
+
+    <section id="mobileForm" class="mobile-panel">
+      <h2 class="mobile-step-title" id="mobileFormTitle">輸入資料</h2>
+      <p class="mobile-step-desc">填完後按「開始計算」，下一頁會顯示完整結果。</p>
+
+      <div id="mobileCaseForm" class="mobile-card">
+        <div class="mobile-form-grid">
+          <div>
+            <label>案件日期</label>
+            <input id="mCaseDate" type="date">
+          </div>
+          <div>
+            <label>案件名稱</label>
+            <input id="mCaseName" placeholder="例如：安卓機">
+          </div>
+          <div>
+            <label>客戶名稱</label>
+            <input id="mCaseCustomer" placeholder="例如：林XX">
+          </div>
+          <div>
+            <label>車牌</label>
+            <input id="mCasePlate" placeholder="例如：ABC-1234">
+          </div>
+          <div>
+            <label>客戶收費</label>
+            <input id="mCaseIncome" type="number" placeholder="例如：5000">
+          </div>
+          <div>
+            <label>總成本</label>
+            <input id="mCaseCost" type="number" placeholder="例如：2000">
+          </div>
+          <div>
+            <label>業務成交人</label>
+            <select id="mCaseSales">
+              <option value="李彥伯">李彥伯</option>
+              <option value="李承峰">李承峰</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="mobileCarForm" class="mobile-card" style="display:none;">
+        <div class="mobile-form-grid">
+          <div>
+            <label>案件日期</label>
+            <input id="mCarDate" type="date">
+          </div>
+          <div>
+            <label>車輛名稱</label>
+            <input id="mCarName" placeholder="例如：Mazda 3">
+          </div>
+          <div>
+            <label>買入價格</label>
+            <input id="mCarBuyPrice" type="number" placeholder="例如：200000">
+          </div>
+          <div>
+            <label>整備成本</label>
+            <input id="mCarRepairCost" type="number" placeholder="例如：50000">
+          </div>
+          <div>
+            <label>其他成本</label>
+            <input id="mCarOtherCost" type="number" placeholder="例如：5000">
+          </div>
+          <div>
+            <label>賣出價格</label>
+            <input id="mCarSellPrice" type="number" placeholder="例如：320000">
+          </div>
+          <div>
+            <label>李彥伯投入金額</label>
+            <input id="mCarBoyfriendInvest" type="number" placeholder="例如：180000">
+          </div>
+          <div>
+            <label>李承峰投入金額</label>
+            <input id="mCarBrotherInvest" type="number" placeholder="例如：70000">
+          </div>
+          <div>
+            <label>備註</label>
+            <textarea id="mCarNote" placeholder="例如：此車由誰找車、誰負責整理"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-actions">
+        <button class="btn btn-dark" onclick="mobileCalculate()">開始計算</button>
+        <button class="btn btn-light" onclick="mobileGoRules()">返回規則</button>
+      </div>
+    </section>
+
+    <section id="mobileResult" class="mobile-panel">
+      <h2 class="mobile-step-title">計算結果</h2>
+      <p class="mobile-step-desc">確認金額沒有問題後，就可以儲存案件。</p>
+
+      <div class="mobile-result-stack" id="mobileResultBoxes"></div>
+      <div class="process" id="mobileProcess"></div>
+
+      <div class="mobile-actions">
+        <button class="btn btn-blue" onclick="mobileSaveRecord()">儲存案件</button>
+        <button class="btn btn-dark" onclick="mobileGoChoose()">新增下一筆</button>
+        <button class="btn btn-light" onclick="mobileGoForm()">返回修改</button>
+      </div>
+    </section>
+  </div>
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      doc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjtrDhYim0RT6e5Fa7MOrJb68Np6eoDCA",
+      authDomain: "leecarfactory.firebaseapp.com",
+      projectId: "leecarfactory",
+      storageBucket: "leecarfactory.firebasestorage.app",
+      messagingSenderId: "219102819768",
+      appId: "1:219102819768:web:4015b4777885a5b58a8b4d",
+      measurementId: "G-5CMJETT3MZ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const recordsRef = collection(db, "profitRecords");
+
+    let lastCaseData = null;
+    let lastCarData = null;
+
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("caseDate").value = today;
+    document.getElementById("carDate").value = today;
+
+    window.showPage = function(pageId, btn) {
+      document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
+      });
+
+      document.getElementById(pageId).classList.add("active");
+
+      document.querySelectorAll(".nav button").forEach(button => {
+        button.classList.remove("active");
+      });
+
+      btn.classList.add("active");
+
+      if (pageId === "recordsPage") {
+        loadRecords();
+      }
+    };
+
+    function money(num) {
+      return "$" + Math.round(Number(num || 0)).toLocaleString();
+    }
+
+    function getNumber(id) {
+      return Number(document.getElementById(id).value) || 0;
+    }
+
+    function getValue(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    window.calculateCase = function() {
+      const date = getValue("caseDate");
+      const name = getValue("caseName") || "未命名案件";
+      const customer = getValue("caseCustomer") || "未填客戶";
+      const plate = getValue("casePlate") || "未填車牌";
+      const sales = getValue("caseSales");
+
+      const income = getNumber("caseIncome");
+      const cost = getNumber("caseCost");
+      const profit = income - cost;
+
+      let fund = 0;
+      let bonus = 0;
+      let remainProfit = 0;
+      let baseShare = 0;
+      let boyfriendShare = 0;
+      let brotherShare = 0;
+
+      if (income <= 0) {
+        alert("請輸入客戶收費");
+        return;
+      }
+
+      if (profit > 0) {
+        fund = profit * 0.1;
+        bonus = profit * 0.2;
+        remainProfit = profit - fund - bonus;
+        baseShare = remainProfit / 2;
+
+        boyfriendShare = baseShare;
+        brotherShare = baseShare;
+
+        if (sales === "李彥伯") {
+          boyfriendShare += bonus;
+        } else {
+          brotherShare += bonus;
+        }
+      } else {
+        fund = 0;
+        bonus = 0;
+        remainProfit = profit;
+        baseShare = profit / 2;
+        boyfriendShare = baseShare;
+        brotherShare = baseShare;
+      }
+
+      document.getElementById("caseProfitText").textContent = money(profit);
+      document.getElementById("caseFundText").textContent = money(fund);
+      document.getElementById("caseBonusText").textContent = money(bonus);
+      document.getElementById("caseBoyfriendText").textContent = money(boyfriendShare);
+      document.getElementById("caseBrotherText").textContent = money(brotherShare);
+
+      let processHTML = "";
+
+      if (profit > 0) {
+        processHTML = `
+          <b>計算過程：</b>
+          案件淨利 = 客戶收費 ${money(income)} - 總成本 ${money(cost)} = ${money(profit)}<br>
+          設備基金 = 案件淨利 ${money(profit)} × 10% = ${money(fund)}<br>
+          業務獎金 = 案件淨利 ${money(profit)} × 20% = ${money(bonus)}<br>
+          本案業務成交人：${sales}<br>
+          剩餘利潤 = 案件淨利 ${money(profit)} - 設備基金 ${money(fund)} - 業務獎金 ${money(bonus)} = ${money(remainProfit)}<br>
+          剩餘利潤對半分 = ${money(remainProfit)} × 50% = ${money(baseShare)}<br>
+          李彥伯分潤 = 基本分潤 ${money(baseShare)} + 業務獎金 ${sales === "李彥伯" ? money(bonus) : "$0"} = ${money(boyfriendShare)}<br>
+          李承峰分潤 = 基本分潤 ${money(baseShare)} + 業務獎金 ${sales === "李承峰" ? money(bonus) : "$0"} = ${money(brotherShare)}
+        `;
+      } else {
+        processHTML = `
+          <b>計算過程：</b>
+          案件淨利 = 客戶收費 ${money(income)} - 總成本 ${money(cost)} = ${money(profit)}<br>
+          因為本案為虧損案件，不提撥設備基金，也不發放業務獎金。<br>
+          虧損金額由兩人平均承擔：${money(profit)} ÷ 2 = ${money(baseShare)}<br>
+          李彥伯承擔：${money(boyfriendShare)}<br>
+          李承峰承擔：${money(brotherShare)}
+        `;
+      }
+
+      document.getElementById("caseProcess").innerHTML = processHTML;
+
+      lastCaseData = {
+        type: "一般案件",
+        date,
+        name,
+        customer,
+        plate,
+        sales,
+        income,
+        cost,
+        profit,
+        fund,
+        bonus,
+        boyfriendShare,
+        brotherShare,
+        createdAt: serverTimestamp()
+      };
+    };
+
+    window.saveCase = async function() {
+      if (!lastCaseData) {
+        calculateCase();
+      }
+
+      if (!lastCaseData) return;
+
+      await addDoc(recordsRef, lastCaseData);
+      alert("一般案件已儲存");
+      lastCaseData = null;
+      loadRecords();
+    };
+
+    window.calculateCar = function() {
+      const date = getValue("carDate");
+      const name = getValue("carName") || "未命名車輛";
+      const note = getValue("carNote");
+
+      const buyPrice = getNumber("carBuyPrice");
+      const repairCost = getNumber("carRepairCost");
+      const otherCost = getNumber("carOtherCost");
+      const sellPrice = getNumber("carSellPrice");
+
+      const boyfriendInvest = getNumber("carBoyfriendInvest");
+      const brotherInvest = getNumber("carBrotherInvest");
+
+      const totalCost = buyPrice + repairCost + otherCost;
+      const profit = sellPrice - totalCost;
+      const totalInvest = boyfriendInvest + brotherInvest;
+
+      if (sellPrice <= 0) {
+        alert("請輸入賣出價格");
+        return;
+      }
+
+      if (totalInvest <= 0) {
+        alert("請輸入李彥伯與李承峰的投入金額");
+        return;
+      }
+
+      const boyfriendRate = boyfriendInvest / totalInvest;
+      const brotherRate = brotherInvest / totalInvest;
+
+      const boyfriendShare = profit * boyfriendRate;
+      const brotherShare = profit * brotherRate;
+
+      document.getElementById("carProfitText").textContent = money(profit);
+      document.getElementById("carInvestText").textContent = money(totalInvest);
+      document.getElementById("carBoyfriendRateText").textContent = (boyfriendRate * 100).toFixed(1) + "%";
+      document.getElementById("carBoyfriendShareText").textContent = money(boyfriendShare);
+      document.getElementById("carBrotherShareText").textContent = money(brotherShare);
+
+      document.getElementById("carProcess").innerHTML = `
+        <b>計算過程：</b>
+        總成本 = 買入價格 ${money(buyPrice)} + 整備成本 ${money(repairCost)} + 其他成本 ${money(otherCost)} = ${money(totalCost)}<br>
+        車輛淨利 = 賣出價格 ${money(sellPrice)} - 總成本 ${money(totalCost)} = ${money(profit)}<br>
+        總投入金額 = 李彥伯投入 ${money(boyfriendInvest)} + 李承峰投入 ${money(brotherInvest)} = ${money(totalInvest)}<br>
+        李彥伯投入比例 = ${money(boyfriendInvest)} ÷ ${money(totalInvest)} = ${(boyfriendRate * 100).toFixed(1)}%<br>
+        李承峰投入比例 = ${money(brotherInvest)} ÷ ${money(totalInvest)} = ${(brotherRate * 100).toFixed(1)}%<br>
+        李彥伯分潤 = 車輛淨利 ${money(profit)} × ${(boyfriendRate * 100).toFixed(1)}% = ${money(boyfriendShare)}<br>
+        李承峰分潤 = 車輛淨利 ${money(profit)} × ${(brotherRate * 100).toFixed(1)}% = ${money(brotherShare)}
+      `;
+
+      lastCarData = {
+        type: "中古車投資",
+        date,
+        name,
+        note,
+        buyPrice,
+        repairCost,
+        otherCost,
+        sellPrice,
+        totalCost,
+        profit,
+        fund: 0,
+        bonus: 0,
+        boyfriendInvest,
+        brotherInvest,
+        boyfriendRate,
+        brotherRate,
+        boyfriendShare,
+        brotherShare,
+        createdAt: serverTimestamp()
+      };
+    };
+
+    window.saveCar = async function() {
+      if (!lastCarData) {
+        calculateCar();
+      }
+
+      if (!lastCarData) return;
+
+      await addDoc(recordsRef, lastCarData);
+      alert("中古車投資案件已儲存");
+      lastCarData = null;
+      loadRecords();
+    };
+
+   async function loadRecords() {
+
+  const q = query(recordsRef, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+
+  const table = document.getElementById("recordsTable");
+
+  table.innerHTML = "";
+
+  let totalProfit = 0;
+  let totalFund = 0;
+  let totalBoyfriend = 0;
+  let totalBrother = 0;
+
+  snapshot.forEach(docItem => {
+
+    const data = docItem.data();
+
+    totalProfit += Number(data.profit || 0);
+    totalFund += Number(data.fund || 0);
+    totalBoyfriend += Number(data.boyfriendShare || 0);
+    totalBrother += Number(data.brotherShare || 0);
+
+    table.innerHTML += `
+      <tr>
+        <td>${data.date || "-"}</td>
+        <td>${data.type || "-"}</td>
+        <td>${data.name || "-"}</td>
+        <td>${money(data.profit)}</td>
+        <td>${money(data.fund)}</td>
+        <td>${money(data.bonus)}</td>
+        <td>${money(data.boyfriendShare)}</td>
+        <td>${money(data.brotherShare)}</td>
+
+        <td>
+          <button
+            onclick="deleteRecord('${docItem.id}')"
+            style="
+              background:#dc2626;
+              color:white;
+              border:none;
+              padding:8px 12px;
+              border-radius:8px;
+              cursor:pointer;
+              font-weight:700;
+            "
+          >
+            刪除
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalProfit").textContent =
+    money(totalProfit);
+
+  document.getElementById("totalFund").textContent =
+    money(totalFund);
+
+  document.getElementById("totalBoyfriend").textContent =
+    money(totalBoyfriend);
+
+  document.getElementById("totalBrother").textContent =
+    money(totalBrother);
+}
+
+
+/* =========================
+   單筆刪除
+========================= */
+window.deleteRecord = async function(id) {
+
+  const ok = confirm("確定刪除這筆紀錄嗎？");
+
+  if (!ok) return;
+
+  await deleteDoc(doc(db, "profitRecords", id));
+
+  alert("紀錄已刪除");
+
+  loadRecords();
+};
+
+
+/* =========================
+   清空所有紀錄
+========================= */
+window.clearAllRecords = async function() {
+
+  const ok = confirm(
+    "確定要清空所有紀錄嗎？這個動作不能復原。"
+  );
+
+  if (!ok) return;
+
+  const snapshot = await getDocs(recordsRef);
+
+  for (const docItem of snapshot.docs) {
+
+    await deleteDoc(
+      doc(db, "profitRecords", docItem.id)
+    );
+  }
+
+  alert("所有紀錄已清空");
+
+  loadRecords();
+};
+
+
+/* =========================
+   CSV下載
+========================= */
+window.downloadCSV = async function() {
+
+  const q = query(recordsRef, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+
+  let csv = "日期,類型,名稱,淨利,設備基金,業務獎金,李彥伯,李承峰\n";
+
+  snapshot.forEach(docItem => {
+    const data = docItem.data();
+
+    csv += [
+      data.date || "",
+      data.type || "",
+      data.name || "",
+      data.profit || 0,
+      data.fund || 0,
+      data.bonus || 0,
+      data.boyfriendShare || 0,
+      data.brotherShare || 0
+    ].join(",") + "\n";
+  });
+
+  const blob = new Blob(
+    ["\uFEFF" + csv],
+    { type: "text/csv;charset=utf-8;" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = `小李車庫紀錄_${new Date().toLocaleDateString("zh-TW")}.csv`;
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
+
+/* =========================
+   初始化載入
+========================= */
+loadRecords();
+  </script>
 </body>
 </html>
