@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小李車庫 分潤管理系統</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <section class="container">
+
+      <header class="header">
+        <h1>小李車庫 分潤管理系統</h1>
+        <p>計算案件分潤、儲存紀錄、統計本月金額，方便後續做帳。</p>
+      </header>
+
+      <div class="top-layout">
+
+        <section class="card">
+          <h2>輸入案件資料</h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>案件日期</label>
+              <input id="caseDate" type="date">
+            </div>
+
+            <div class="form-group">
+              <label>案件名稱</label>
+              <input id="caseName" type="text" placeholder="例如：安卓機安裝">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>客戶名稱</label>
+              <input id="customerName" type="text" placeholder="例如：王先生">
+            </div>
+
+            <div class="form-group">
+              <label>車牌</label>
+              <input id="carPlate" type="text" placeholder="例如：ABC-1234">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>客戶收費</label>
+              <input id="income" type="number" placeholder="例如：100000">
+            </div>
+
+            <div class="form-group">
+              <label>總成本</label>
+              <input id="cost" type="number" placeholder="例如：60000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>業務成交人</label>
+            <select id="salesOwner">
+              <option value="yanbo">李彥伯</option>
+              <option value="chengfeng">李承峰</option>
+              <option value="both">共同成交</option>
+            </select>
+          </div>
+
+          <button onclick="calculate()">開始計算</button>
+          <button class="save-btn" onclick="saveRecord()">儲存本次案件</button>
+        </section>
+
+        <section class="card explanation">
+          <h2>分潤制度說明</h2>
+
+          <div class="step">
+            <h3>1. 先扣除所有成本</h3>
+            <p>客戶收費扣掉材料、外包、運費、雜支後，才是案件真正淨利。</p>
+          </div>
+
+          <div class="step">
+            <h3>2. 設備 / 材料基金 10%</h3>
+            <p>先從案件淨利中保留 10%，作為設備、工具更新、材料備貨與未來營運資金。</p>
+          </div>
+
+          <div class="step">
+            <h3>3. 業務獎金 20%</h3>
+            <p>誰負責客戶聯繫、接洽、報價、溝通與成交，誰取得業務獎金；共同成交則兩人平分。</p>
+          </div>
+
+          <div class="step">
+            <h3>4. 剩餘利潤再對半分</h3>
+            <p>扣除設備資金與業務獎金後，剩餘利潤由李彥伯與李承峰各分配 50%。</p>
+          </div>
+
+          <div class="notice">
+            所有案件皆依照系統公式計算，避免感覺分帳，讓分潤公開透明。
+          </div>
+        </section>
+
+      </div>
+
+      <section class="summary-card">
+        <h2>本月統計</h2>
+
+        <div class="summary-grid">
+          <div class="summary-box">
+            <span>本月總收費</span>
+            <strong id="monthIncome">$0</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>本月總淨利</span>
+            <strong id="monthNetProfit">$0</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>設備資金累積</span>
+            <strong id="monthEquipment">$0</strong>
+          </div>
+
+          <div class="summary-box highlight">
+            <span>李彥伯本月累積</span>
+            <strong id="monthYanbo">$0</strong>
+          </div>
+
+          <div class="summary-box">
+            <span>李承峰本月累積</span>
+            <strong id="monthChengfeng">$0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="result-card">
+        <h2>計算結果</h2>
+
+        <div class="result-grid">
+          <div class="result-box">
+            <span>案件淨利</span>
+            <strong id="netProfit">$0</strong>
+          </div>
+
+          <div class="result-box">
+            <span>設備資金</span>
+            <strong id="equipmentFund">$0</strong>
+          </div>
+
+          <div class="result-box">
+            <span>業務獎金</span>
+            <strong id="salesBonus">$0</strong>
+          </div>
+
+          <div class="result-box highlight">
+            <span>李彥伯最後可拿</span>
+            <strong id="yanboMoney">$0</strong>
+          </div>
+
+          <div class="result-box">
+            <span>李承峰最後可拿</span>
+            <strong id="chengfengMoney">$0</strong>
+          </div>
+        </div>
+
+        <div id="formulaText" class="formula">
+          請輸入資料後開始計算。
+        </div>
+      </section>
+
+      <section class="history-card">
+        <div class="history-title">
+          <h2>案件紀錄</h2>
+
+          <div class="history-actions">
+            <button class="export-btn" onclick="exportCSV()">匯出 CSV</button>
+            <button class="clear-btn" onclick="clearRecords()">清空紀錄</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>操作</th>
+                <th>日期</th>
+                <th>案件名稱</th>
+                <th>客戶</th>
+                <th>車牌</th>
+                <th>收費</th>
+                <th>成本</th>
+                <th>淨利</th>
+                <th>業務</th>
+                <th>設備資金</th>
+                <th>業務獎金</th>
+                <th>李彥伯</th>
+                <th>李承峰</th>
+              </tr>
+            </thead>
+
+            <tbody id="historyTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
