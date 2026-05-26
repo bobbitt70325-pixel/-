@@ -151,7 +151,12 @@ button:hover {
   margin-top: 20px;
 }
 
-.result-grid,
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -175,7 +180,7 @@ button:hover {
 
 .result-box strong,
 .summary-box strong {
-  font-size: 22px;
+  font-size: 21px;
 }
 
 .highlight {
@@ -236,7 +241,7 @@ button:hover {
 
 table {
   width: 100%;
-  min-width: 1100px;
+  min-width: 1200px;
   border-collapse: collapse;
 }
 
@@ -265,6 +270,21 @@ th {
 
 .delete-btn:hover {
   background: #dc2626;
+}
+
+.profit-text {
+  color: #0f766e;
+  font-weight: bold;
+}
+
+.loss-text {
+  color: #dc2626;
+  font-weight: bold;
+}
+
+.even-text {
+  color: #666;
+  font-weight: bold;
 }
 
 @media (max-width: 900px) {
