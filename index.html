@@ -6,109 +6,51 @@
   <title>小李車庫 分潤管理系統</title>
 
   <style>
-    :root {
-      --bg: #f4f6fa;
-      --surface: rgba(255, 255, 255, 0.92);
-      --surface-strong: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --line-strong: #cbd5e1;
-      --black: #111111;
-      --blue: #2563eb;
-      --red: #dc2626;
-      --green: #059669;
-      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-      --shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.06);
-      --radius-lg: 26px;
-      --radius-md: 18px;
-      --radius-sm: 14px;
-    }
-
-    * {
-       box-sizing: border-box;
-       transition: none !important;
-       animation: none !important;
-       scroll-behavior: auto !important;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: "Noto Sans TC", "Inter", Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 34%),
-        linear-gradient(180deg, #f8fafc 0%, var(--bg) 44%, #eef2f7 100%);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(17, 24, 39, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(17, 24, 39, 0.025) 1px, transparent 1px);
-      background-size: 32px 32px;
-      mask-image: linear-gradient(to bottom, black, transparent 70%);
+      font-family: "Noto Sans TC", Arial, sans-serif;
+      background: #eef0f3;
+      color: #000;
     }
 
     .app {
       max-width: 1180px;
       margin: 0 auto;
-      padding: 28px 22px 48px;
-      position: relative;
+      padding: 16px 22px 40px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 42px);
-      font-weight: 950;
-      letter-spacing: -1.2px;
-      line-height: 1.08;
+      font-size: 28px;
+      font-weight: 900;
     }
 
     .subtitle {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.7;
+      margin-top: 8px;
+      color: #5b6472;
+      font-size: 14px;
     }
 
     .nav {
-      display: inline-flex;
-      gap: 8px;
-      margin: 24px 0 22px;
-      padding: 6px;
-      background: rgba(255, 255, 255, 0.74);
-      border: 1px solid rgba(203, 213, 225, 0.8);
-      border-radius: 999px;
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(14px);
+      display: flex;
+      gap: 10px;
+      margin: 22px 0;
     }
 
     .nav button {
       border: 0;
       padding: 11px 18px;
       border-radius: 999px;
-      background: transparent;
-      color: #475569;
-      font-weight: 900;
+      background: #fff;
+      font-weight: 800;
       cursor: pointer;
-      transition: 0.18s ease;
-    }
-
-    .nav button:hover {
-      background: #f1f5f9;
-      color: var(--text);
-      transform: translateY(-1px);
     }
 
     .nav button.active {
-      background: var(--black);
+      background: #111;
       color: #fff;
-      box-shadow: 0 12px 26px rgba(17, 17, 17, 0.18);
     }
 
     .page { display: none; }
@@ -116,25 +58,21 @@
 
     .two-col {
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
-      gap: 22px;
-      align-items: start;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
     }
 
     .card {
-      background: var(--surface);
-      border: 1px solid rgba(226, 232, 240, 0.95);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.04);
     }
 
     h2 {
-      margin: 0 0 22px;
-      font-size: 26px;
-      font-weight: 950;
-      letter-spacing: -0.5px;
+      margin: 0 0 20px;
+      font-size: 25px;
+      font-weight: 900;
     }
 
     h3 {
@@ -146,7 +84,7 @@
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px 16px;
+      gap: 16px 14px;
     }
 
     .full { grid-column: 1 / -1; }
@@ -156,182 +94,119 @@
       margin-bottom: 8px;
       font-weight: 900;
       font-size: 14px;
-      color: #111827;
     }
 
     input, select, textarea {
       width: 100%;
-      border: 1px solid var(--line-strong);
-      border-radius: 16px;
-      padding: 13px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px 13px;
       font-size: 15px;
       background: #fff;
-      color: var(--text);
-      transition: 0.18s ease;
-      box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.03);
+
       -webkit-appearance: none;
       appearance: none;
     }
 
-    input::placeholder, textarea::placeholder { color: #a1a1aa; }
-
-    input:hover, select:hover, textarea:hover {
-      border-color: #94a3b8;
-    }
-
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: var(--blue);
-      background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-    }
-
-    input[type="date"] {
-      font-size: 14px;
-      height: 48px;
-    }
-
-    input[type="date"]::-webkit-date-and-time-value {
-      text-align: left;
+      border-color: #8aa7d8;
+      background: #eef4ff;
     }
 
     textarea {
-      min-height: 96px;
+      min-height: 90px;
       resize: vertical;
     }
 
     .btn {
       width: 100%;
       border: 0;
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 14px 18px;
       margin-top: 16px;
-      font-weight: 950;
+      font-weight: 900;
       font-size: 15px;
       cursor: pointer;
-      transition: 0.18s ease;
     }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.02);
-    }
-
-    .btn:active { transform: translateY(0); }
 
     .btn-dark {
-      background: var(--black);
+      background: #111;
       color: #fff;
-      box-shadow: 0 14px 28px rgba(17, 17, 17, 0.18);
     }
 
     .btn-blue {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      background: #2f6de0;
       color: #fff;
-      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
     }
 
     .btn-red {
-      background: var(--red);
+      background: #dc2626;
       color: #fff;
       width: auto;
-      box-shadow: 0 12px 24px rgba(220, 38, 38, 0.18);
-    }
-
-    .btn-light {
-      background: #fff;
-      color: var(--text);
-      border: 1px solid var(--line-strong);
     }
 
     .rule-item {
-      position: relative;
-      padding: 0 0 16px 18px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .rule-item::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 7px;
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: var(--black);
+      padding: 0 0 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     .rule-item strong {
       display: block;
       font-size: 17px;
       margin-bottom: 7px;
-      letter-spacing: -0.2px;
     }
 
     .rule-item p {
       margin: 0;
-      color: var(--muted);
+      color: #4b5563;
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.6;
     }
 
     .note {
       margin-top: 18px;
-      padding: 15px 16px;
-      background: linear-gradient(135deg, #f8fafc, #eef2ff);
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      font-weight: 850;
+      padding: 14px;
+      background: #f1f3f6;
+      border-radius: 14px;
+      font-weight: 800;
       font-size: 14px;
-      color: #334155;
     }
 
     .result-card {
-      margin-top: 22px;
+      margin-top: 20px;
     }
 
-    .result-grid,
-    .car-result-grid {
+    .result-grid {
       display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: 14px;
     }
 
     .result-grid {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .car-result-grid {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
     }
 
     .result-box {
-      background: linear-gradient(180deg, #f8fafc, #f1f5f9);
-      border: 1px solid #e5e7eb;
-      border-radius: 18px;
+      background: #f5f7fa;
+      border-radius: 14px;
       padding: 18px 16px;
-      min-height: 92px;
-      transition: 0.18s ease;
-    }
-
-    .result-box:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-soft);
+      min-height: 82px;
     }
 
     .result-box.dark {
-      background: linear-gradient(135deg, #111111, #27272a);
+      background: #111;
       color: #fff;
-      border-color: #111;
-      box-shadow: 0 18px 36px rgba(17, 17, 17, 0.22);
     }
 
     .result-box span {
       display: block;
-      color: #64748b;
+      color: #697282;
       font-size: 13px;
-      font-weight: 750;
-      margin-bottom: 9px;
+      margin-bottom: 8px;
     }
 
     .result-box.dark span {
@@ -339,106 +214,74 @@
     }
 
     .result-box b {
-      font-size: 23px;
-      letter-spacing: -0.4px;
+      font-size: 21px;
     }
 
     .process {
       margin-top: 18px;
       padding: 20px;
-      border-radius: 18px;
-      background: #f8fafc;
-      border: 1px solid #e5e7eb;
-      line-height: 1.8;
+      border-radius: 14px;
+      background: #f5f7fa;
+      line-height: 1.7;
       font-size: 15px;
-      color: #334155;
     }
 
     .process b {
       display: block;
       margin-bottom: 6px;
-      color: var(--text);
     }
 
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 14px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .summary-box {
-      background: var(--surface);
-      border: 1px solid #e5e7eb;
-      border-radius: 22px;
+      background: #fff;
+      border-radius: 18px;
       padding: 22px;
-      box-shadow: var(--shadow-soft);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.04);
     }
 
     .summary-box span {
-      color: #64748b;
+      color: #697282;
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .summary-box b {
       display: block;
       margin-top: 8px;
-      font-size: 28px;
-      letter-spacing: -0.8px;
+      font-size: 26px;
     }
 
     table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      margin-top: 18px;
+      border-collapse: collapse;
+      margin-top: 16px;
       overflow: hidden;
-      border-radius: 18px;
+      border-radius: 14px;
       background: #fff;
-      border: 1px solid #e5e7eb;
-      box-shadow: var(--shadow-soft);
     }
 
     th, td {
-      padding: 14px 13px;
-      border-bottom: 1px solid #eef2f7;
+      padding: 13px 12px;
+      border-bottom: 1px solid #e5e7eb;
       text-align: left;
       font-size: 14px;
-      white-space: nowrap;
     }
 
     th {
       background: #111;
       color: #fff;
-      font-weight: 900;
-    }
-
-    tr:last-child td { border-bottom: 0; }
-
-    tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    @media (max-width: 1100px) {
-      .car-result-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
     }
 
     @media (max-width: 900px) {
-      .desktop-app { display: none; }
-
-      body {
-        background:
-          radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
-          linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-      }
-
       .two-col,
       .form-grid,
       .result-grid,
-      .car-result-grid,
       .summary-grid {
         grid-template-columns: 1fr;
       }
@@ -452,22 +295,21 @@
       }
     }
 
+
     /* 手機版：保留桌機版不動，只在手機寬度啟用分步流程 */
     .mobile-app { display: none; }
 
     .mobile-step-title {
-      font-size: 28px;
-      font-weight: 950;
-      margin: 0 0 10px;
-      letter-spacing: -0.8px;
-      line-height: 1.15;
+      font-size: 26px;
+      font-weight: 900;
+      margin: 0 0 8px;
     }
 
     .mobile-step-desc {
-      color: var(--muted);
+      color: #5b6472;
       line-height: 1.7;
       margin: 0 0 18px;
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .mobile-choice-grid {
@@ -477,34 +319,25 @@
     }
 
     .mobile-choice-card {
-      border: 1px solid #e5e7eb;
+      border: 0;
       width: 100%;
       text-align: left;
-      background: var(--surface);
-      border-radius: 24px;
+      background: #fff;
+      border-radius: 22px;
       padding: 22px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.06);
       cursor: pointer;
-      transition: 0.18s ease;
-    }
-
-    .mobile-choice-card:hover,
-    .mobile-choice-card:active {
-      transform: translateY(-2px);
-      border-color: #cbd5e1;
-      box-shadow: 0 20px 42px rgba(15, 23, 42, 0.10);
     }
 
     .mobile-choice-card strong {
       display: block;
-      font-size: 23px;
+      font-size: 22px;
       margin-bottom: 8px;
-      letter-spacing: -0.4px;
     }
 
     .mobile-choice-card span {
-      color: var(--muted);
-      line-height: 1.7;
+      color: #5b6472;
+      line-height: 1.6;
       font-size: 14px;
     }
 
@@ -512,11 +345,10 @@
     .mobile-panel.active { display: block; }
 
     .mobile-rule-card {
-      background: var(--surface);
-      border: 1px solid #e5e7eb;
-      border-radius: 24px;
-      padding: 22px;
-      box-shadow: var(--shadow);
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
     }
 
     .mobile-rule-card .rule-item:last-child { border-bottom: 0; }
@@ -534,58 +366,56 @@
       margin-top: 16px;
     }
 
+    .btn-light {
+      background: #fff;
+      color: #111;
+      border: 1px solid #cbd5e1;
+    }
+
     @media (max-width: 900px) {
+      .desktop-app { display: none; }
       .mobile-app {
         display: block;
-        padding: 22px 16px 38px;
-        max-width: 520px;
-        margin: 0 auto;
+        padding: 18px 16px 36px;
       }
 
+      body { background: #eef0f3; }
+
       .mobile-app h1 {
-        font-size: 30px;
-        line-height: 1.18;
-        letter-spacing: -1px;
+        font-size: 26px;
+        line-height: 1.25;
       }
 
       .mobile-card {
-        background: var(--surface);
-        border: 1px solid #e5e7eb;
-        border-radius: 24px;
-        padding: 22px;
-        box-shadow: var(--shadow);
+        background: #fff;
+        border-radius: 22px;
+        padding: 20px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.05);
       }
 
       .mobile-form-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 14px;
       }
 
       .mobile-progress {
         display: flex;
-        gap: 8px;
-        margin: 22px 0 26px;
+        gap: 6px;
+        margin: 18px 0;
       }
 
       .mobile-progress span {
         flex: 1;
-        height: 7px;
+        height: 6px;
         border-radius: 999px;
-        background: #dbe2ea;
-        transition: 0.18s ease;
+        background: #d7dce5;
       }
 
-      .mobile-progress span.active {
-        background: linear-gradient(90deg, #111111, #334155);
-      }
-
-      .result-box {
-        min-height: 84px;
-      }
+      .mobile-progress span.active { background: #111; }
     }
 
-</style>
+  </style>
 </head>
 
 <body>
@@ -764,11 +594,6 @@
               <label>李承峰投入金額</label>
               <input id="carBrotherInvest" type="number" placeholder="例如：70000">
             </div>
-
-            <div class="full">
-              <label>備註</label>
-              <textarea id="carNote" placeholder="例如：此車由李彥伯找車，李承峰負責部分電系整理"></textarea>
-            </div>
           </div>
 
           <button class="btn btn-dark" onclick="calculateCar()">開始計算</button>
@@ -800,7 +625,7 @@
       <div class="card result-card">
         <h2>中古車計算結果</h2>
 
-        <div class="car-result-grid">
+        <div class="result-grid">
           <div class="result-box">
             <span>車輛淨利</span>
             <b id="carProfitText">$0</b>
@@ -1007,10 +832,6 @@ style="margin-left:10px;width:auto;">
             <label>李承峰投入金額</label>
             <input id="mCarBrotherInvest" type="number" placeholder="例如：70000">
           </div>
-          <div>
-            <label>備註</label>
-            <textarea id="mCarNote" placeholder="例如：此車由誰找車、誰負責整理"></textarea>
-          </div>
         </div>
       </div>
 
@@ -1214,7 +1035,6 @@ style="margin-left:10px;width:auto;">
     window.calculateCar = function() {
       const date = getValue("carDate");
       const name = getValue("carName") || "未命名車輛";
-      const note = getValue("carNote");
 
       const buyPrice = getNumber("carBuyPrice");
       const repairCost = getNumber("carRepairCost");
@@ -1477,7 +1297,7 @@ function mobileShowPanel(panelId, stepNumber) {
     document.getElementById("mStep" + i).classList.toggle("active", i <= stepNumber);
   }
 
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 window.mobileSelectType = function(type) {
@@ -1643,7 +1463,6 @@ function mobileCalculateCar() {
     <div class="result-box"><span>車輛淨利</span><b>${money(profit)}</b></div>
     <div class="result-box"><span>總投入金額</span><b>${money(totalInvest)}</b></div>
     <div class="result-box"><span>李彥伯投入比例</span><b>${(boyfriendRate * 100).toFixed(1)}%</b></div>
-    <div class="result-box"><span>李承峰投入比例</span><b>${(brotherRate * 100).toFixed(1)}%</b></div>
     <div class="result-box dark"><span>李彥伯分潤</span><b>${money(boyfriendShare)}</b></div>
     <div class="result-box"><span>李承峰分潤</span><b>${money(brotherShare)}</b></div>
   `;
