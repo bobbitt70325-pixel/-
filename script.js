@@ -4,10 +4,6 @@ function formatMoney(number) {
   return "$" + Math.round(number).toLocaleString("zh-TW");
 }
 
-function parseMoney(moneyText) {
-  return Number(String(moneyText).replace(/[$,]/g, ""));
-}
-
 function getTodayValue() {
   const today = new Date();
   const year = today.getFullYear();
@@ -21,6 +17,18 @@ function getSalesOwnerText(value) {
   if (value === "yanbo") return "李彥伯";
   if (value === "chengfeng") return "李承峰";
   return "共同成交";
+}
+
+function getStatusText(netProfit) {
+  if (netProfit > 0) return "獲利";
+  if (netProfit < 0) return "賠本";
+  return "打平";
+}
+
+function getStatusClass(netProfit) {
+  if (netProfit > 0) return "profit-text";
+  if (netProfit < 0) return "loss-text";
+  return "even-text";
 }
 
 function initDate() {
@@ -45,8 +53,8 @@ function calculate() {
     return;
   }
 
-  if (income <= 0) {
-    alert("請輸入客戶收費");
+  if (income < 0) {
+    alert("客戶收費不能是負數");
     return;
   }
 
@@ -56,36 +64,61 @@ function calculate() {
   }
 
   const netProfit = income - cost;
-
-  if (netProfit <= 0) {
-    alert("這筆案件沒有淨利");
-    return;
-  }
-
-  const equipmentFund = netProfit * (equipmentRate / 100);
-  const salesBonus = netProfit * (salesRate / 100);
-  const remainingProfit = netProfit - equipmentFund - salesBonus;
-  const baseShare = remainingProfit * (splitRate / 100);
-
-  let yanboSalesBonus = 0;
-  let chengfengSalesBonus = 0;
+  const statusText = getStatusText(netProfit);
   const salesOwnerText = getSalesOwnerText(salesOwner);
 
-  if (salesOwner === "yanbo") {
-    yanboSalesBonus = salesBonus;
+  let equipmentFund = 0;
+  let salesBonus = 0;
+  let remainingProfit = 0;
+  let baseShare = 0;
+  let yanboSalesBonus = 0;
+  let chengfengSalesBonus = 0;
+  let yanboMoney = 0;
+  let chengfengMoney = 0;
+
+  if (netProfit > 0) {
+    equipmentFund = netProfit * (equipmentRate / 100);
+    salesBonus = netProfit * (salesRate / 100);
+    remainingProfit = netProfit - equipmentFund - salesBonus;
+    baseShare = remainingProfit * (splitRate / 100);
+
+    if (salesOwner === "yanbo") {
+      yanboSalesBonus = salesBonus;
+    }
+
+    if (salesOwner === "chengfeng") {
+      chengfengSalesBonus = salesBonus;
+    }
+
+    if (salesOwner === "both") {
+      yanboSalesBonus = salesBonus / 2;
+      chengfengSalesBonus = salesBonus / 2;
+    }
+
+    yanboMoney = baseShare + yanboSalesBonus;
+    chengfengMoney = baseShare + chengfengSalesBonus;
   }
 
-  if (salesOwner === "chengfeng") {
-    chengfengSalesBonus = salesBonus;
+  if (netProfit === 0) {
+    equipmentFund = 0;
+    salesBonus = 0;
+    remainingProfit = 0;
+    baseShare = 0;
+    yanboMoney = 0;
+    chengfengMoney = 0;
   }
 
-  if (salesOwner === "both") {
-    yanboSalesBonus = salesBonus / 2;
-    chengfengSalesBonus = salesBonus / 2;
+  if (netProfit < 0) {
+    equipmentFund = 0;
+    salesBonus = 0;
+    remainingProfit = netProfit;
+    baseShare = netProfit / 2;
+    yanboMoney = baseShare;
+    chengfengMoney = baseShare;
   }
 
-  const yanboMoney = baseShare + yanboSalesBonus;
-  const chengfengMoney = baseShare + chengfengSalesBonus;
+  document.getElementById("caseStatus").innerText = statusText;
+  document.getElementById("caseStatus").className = getStatusClass(netProfit);
 
   document.getElementById("netProfit").innerText = formatMoney(netProfit);
   document.getElementById("equipmentFund").innerText = formatMoney(equipmentFund);
@@ -93,21 +126,50 @@ function calculate() {
   document.getElementById("yanboMoney").innerText = formatMoney(yanboMoney);
   document.getElementById("chengfengMoney").innerText = formatMoney(chengfengMoney);
 
-  document.getElementById("formulaText").innerHTML = `
-    <strong>計算過程：</strong><br>
-    案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
-    設備資金 = 案件淨利 ${formatMoney(netProfit)} × ${equipmentRate}% = ${formatMoney(equipmentFund)}<br>
-    業務獎金 = 案件淨利 ${formatMoney(netProfit)} × ${salesRate}% = ${formatMoney(salesBonus)}<br>
-    本案業務成交人：${salesOwnerText}<br>
-    剩餘利潤 = 案件淨利 ${formatMoney(netProfit)} - 設備資金 ${formatMoney(equipmentFund)} - 業務獎金 ${formatMoney(salesBonus)} = ${formatMoney(remainingProfit)}<br>
-    剩餘利潤對半分 = ${formatMoney(remainingProfit)} × 50% = ${formatMoney(baseShare)}<br>
-    李彥伯分潤 = 基本分潤 ${formatMoney(baseShare)} + 業務獎金 ${formatMoney(yanboSalesBonus)} = ${formatMoney(yanboMoney)}<br>
-    李承峰分潤 = 基本分潤 ${formatMoney(baseShare)} + 業務獎金 ${formatMoney(chengfengSalesBonus)} = ${formatMoney(chengfengMoney)}
-  `;
+  let formulaHTML = "";
+
+  if (netProfit > 0) {
+    formulaHTML = `
+      <strong>計算過程：</strong><br>
+      案件狀態：獲利<br>
+      案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
+      設備資金 = 案件淨利 ${formatMoney(netProfit)} × ${equipmentRate}% = ${formatMoney(equipmentFund)}<br>
+      業務獎金 = 案件淨利 ${formatMoney(netProfit)} × ${salesRate}% = ${formatMoney(salesBonus)}<br>
+      本案業務成交人：${salesOwnerText}<br>
+      剩餘利潤 = 案件淨利 ${formatMoney(netProfit)} - 設備資金 ${formatMoney(equipmentFund)} - 業務獎金 ${formatMoney(salesBonus)} = ${formatMoney(remainingProfit)}<br>
+      剩餘利潤對半分 = ${formatMoney(remainingProfit)} × 50% = ${formatMoney(baseShare)}<br>
+      李彥伯分潤 = 基本分潤 ${formatMoney(baseShare)} + 業務獎金 ${formatMoney(yanboSalesBonus)} = ${formatMoney(yanboMoney)}<br>
+      李承峰分潤 = 基本分潤 ${formatMoney(baseShare)} + 業務獎金 ${formatMoney(chengfengSalesBonus)} = ${formatMoney(chengfengMoney)}
+    `;
+  }
+
+  if (netProfit === 0) {
+    formulaHTML = `
+      <strong>計算過程：</strong><br>
+      案件狀態：打平<br>
+      案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
+      因本案剛好打平，所以不提撥設備資金、不發放業務獎金，雙方分潤皆為 ${formatMoney(0)}。
+    `;
+  }
+
+  if (netProfit < 0) {
+    formulaHTML = `
+      <strong>計算過程：</strong><br>
+      案件狀態：賠本<br>
+      案件淨利 = 客戶收費 ${formatMoney(income)} - 總成本 ${formatMoney(cost)} = ${formatMoney(netProfit)}<br>
+      因本案為虧損案件，所以不提撥設備資金、不發放業務獎金。<br>
+      虧損由兩人平均承擔：${formatMoney(netProfit)} ÷ 2 = ${formatMoney(baseShare)}<br>
+      李彥伯本案承擔：${formatMoney(yanboMoney)}<br>
+      李承峰本案承擔：${formatMoney(chengfengMoney)}
+    `;
+  }
+
+  document.getElementById("formulaText").innerHTML = formulaHTML;
 
   latestResult = {
     id: Date.now(),
     date: caseDate,
+    status: statusText,
     caseName,
     customerName,
     carPlate,
@@ -147,18 +209,21 @@ function renderRecords() {
   historyTable.innerHTML = "";
 
   records.slice().reverse().forEach(function(record) {
+    const statusClass = getStatusClass(record.netProfit);
+
     historyTable.innerHTML += `
       <tr>
         <td>
           <button class="delete-btn" onclick="deleteRecord(${record.id})">刪除</button>
         </td>
         <td>${record.date}</td>
+        <td class="${statusClass}">${record.status}</td>
         <td>${record.caseName}</td>
         <td>${record.customerName}</td>
         <td>${record.carPlate}</td>
         <td>${formatMoney(record.income)}</td>
         <td>${formatMoney(record.cost)}</td>
-        <td>${formatMoney(record.netProfit)}</td>
+        <td class="${statusClass}">${formatMoney(record.netProfit)}</td>
         <td>${record.salesOwner}</td>
         <td>${formatMoney(record.equipmentFund)}</td>
         <td>${formatMoney(record.salesBonus)}</td>
@@ -237,6 +302,7 @@ function exportCSV() {
 
   const header = [
     "日期",
+    "狀態",
     "案件名稱",
     "客戶名稱",
     "車牌",
@@ -253,6 +319,7 @@ function exportCSV() {
   const rows = records.map(function(record) {
     return [
       record.date,
+      record.status,
       record.caseName,
       record.customerName,
       record.carPlate,
