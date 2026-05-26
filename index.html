@@ -366,6 +366,77 @@
       margin-top: 16px;
     }
 
+    .mobile-record-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+}
+
+.mobile-record-top {
+  display: flex;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mobile-record-card h3 {
+  margin: 10px 0 14px;
+  font-size: 20px;
+}
+
+.mobile-record-money {
+  display: grid;
+  gap: 8px;
+}
+
+.mobile-record-money p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-delete-btn {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: #dc2626;
+  color: white;
+  font-weight: 900;
+}
+
+.mobile-record-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.mobile-record-summary div {
+  background: #111;
+  color: #fff;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.mobile-record-summary span {
+  display: block;
+  color: #d7dce5;
+  font-size: 13px;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.mobile-record-summary b {
+  font-size: 20px;
+}
+
     .btn-light {
       background: #fff;
       color: #111;
@@ -373,6 +444,51 @@
     }
 
     @media (max-width: 900px) {
+      .mobile-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  background: #111;
+  color: #fff;
+
+  border-radius: 0 0 20px 20px;
+
+  padding: 18px 16px;
+
+  margin: 0 -16px 30px;
+
+  text-align: center;
+}
+
+.mobile-navbar-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobile-navbar strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.mobile-navbar span {
+  display: block;
+  font-size: 14px;
+  color: #d7dce5;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.mobile-navbar p {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+      
       .desktop-app { display: none; }
       .mobile-app {
         display: block;
@@ -380,6 +496,8 @@
       }
 
       body { background: #eef0f3; }
+
+      
 
       .mobile-app h1 {
         font-size: 26px;
@@ -719,9 +837,14 @@ style="margin-left:10px;width:auto;">
   </div>
 
   <!-- 手機版流程：只在手機寬度顯示，桌機版完全保留原本畫面 -->
-  <div class="mobile-app">
-    <h1>小李車庫 分潤管理系統</h1>
-    <div class="subtitle">分步流程：選類型 → 看規則 → 填資料 → 看結果。</div>
+<div class="mobile-navbar">
+
+  <div class="mobile-navbar-text">
+    <strong>小李車庫</strong>
+    <p>分步流程：選類型 → 看規則 → 填資料 → 看結果。</p>
+  </div>
+
+</div>
 
     <div class="mobile-progress">
       <span id="mStep1" class="active"></span>
@@ -741,6 +864,11 @@ style="margin-left:10px;width:auto;">
         <button class="mobile-choice-card" onclick="mobileSelectType('car')">
           <strong>中古車買賣</strong>
           <span>買車、整理、轉售。依照李彥伯與李承峰的投入金額比例分潤。</span>
+        </button>
+
+        <button class="mobile-choice-card" onclick="mobileShowRecords()">
+          <strong>查看所有紀錄</strong>
+          <span>用手機圖卡方式查看所有案件，也可以刪除單筆紀錄。</span>
         </button>
       </div>
     </section>
@@ -852,6 +980,23 @@ style="margin-left:10px;width:auto;">
         <button class="btn btn-light" onclick="mobileGoForm()">返回修改</button>
       </div>
     </section>
+    <section id="mobileRecords" class="mobile-panel">
+
+  <h2 class="mobile-step-title">所有紀錄</h2>
+
+  <div id="mobileRecordsList"></div>
+
+  <div class="mobile-actions">
+    <button class="btn btn-dark" onclick="downloadCSV()">
+      下載 CSV
+    </button>
+
+    <button class="btn btn-light" onclick="mobileGoChoose()">
+      返回首頁
+    </button>
+  </div>
+
+</section>
   </div>
 
 
@@ -1519,6 +1664,112 @@ window.mobileSaveRecord = async function() {
   loadRecords();
   mobileGoChoose();
 };
+
+window.mobileShowRecords = async function() {
+
+  await loadMobileRecords();
+
+  mobileShowPanel("mobileRecords", 1);
+};
+
+async function loadMobileRecords() {
+
+  const q = query(recordsRef, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+
+  const list = document.getElementById("mobileRecordsList");
+
+  list.innerHTML = "";
+
+  let totalProfit = 0;
+  let totalFund = 0;
+  let totalBoyfriend = 0;
+  let totalBrother = 0;
+
+  snapshot.forEach(docItem => {
+    const data = docItem.data();
+
+    totalProfit += Number(data.profit || 0);
+    totalFund += Number(data.fund || 0);
+    totalBoyfriend += Number(data.boyfriendShare || 0);
+    totalBrother += Number(data.brotherShare || 0);
+  });
+
+  list.innerHTML += `
+    <div class="mobile-record-summary">
+      <div>
+        <span>總淨利</span>
+        <b>${money(totalProfit)}</b>
+      </div>
+
+      <div>
+        <span>設備基金</span>
+        <b>${money(totalFund)}</b>
+      </div>
+
+      <div>
+        <span>李彥伯</span>
+        <b>${money(totalBoyfriend)}</b>
+      </div>
+
+      <div>
+        <span>李承峰</span>
+        <b>${money(totalBrother)}</b>
+      </div>
+    </div>
+  `;
+
+  snapshot.forEach(docItem => {
+    const data = docItem.data();
+
+    list.innerHTML += `
+      <div class="mobile-record-card">
+
+        <div class="mobile-record-top">
+          <span>${data.type || "-"}</span>
+          <small>${data.date || "-"}</small>
+        </div>
+
+        <h3>${data.name || "-"}</h3>
+
+        <div class="mobile-record-money">
+          <p>
+            <span>淨利</span>
+            <b>${money(data.profit)}</b>
+          </p>
+
+          <p>
+            <span>設備基金</span>
+            <b>${money(data.fund)}</b>
+          </p>
+
+          <p>
+            <span>業務獎金</span>
+            <b>${money(data.bonus)}</b>
+          </p>
+
+          <p>
+            <span>李彥伯</span>
+            <b>${money(data.boyfriendShare)}</b>
+          </p>
+
+          <p>
+            <span>李承峰</span>
+            <b>${money(data.brotherShare)}</b>
+          </p>
+        </div>
+
+        <button
+          class="mobile-delete-btn"
+          onclick="deleteRecord('${docItem.id}')"
+        >
+          刪除紀錄
+        </button>
+
+      </div>
+    `;
+  });
+}
 
 /* =========================
    初始化載入
