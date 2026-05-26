@@ -918,6 +918,7 @@ style="margin-left:10px;width:auto;">
             <select id="mCaseSales">
               <option value="李彥伯">李彥伯</option>
               <option value="李承峰">李承峰</option>
+              <option value="共同成交">共同成交</option>
             </select>
           </div>
         </div>
@@ -1554,8 +1555,34 @@ function mobileCalculateCase() {
     設備基金 = ${money(fund)}<br>
     業務獎金 = ${money(bonus)}<br>
     業務成交人：${sales}<br>
-    李彥伯分潤 = ${money(boyfriendShare)}<br>
-    李承峰分潤 = ${money(brotherShare)}
+
+李彥伯分潤 =
+基本分潤 ${money(baseShare)}
++
+業務獎金 ${
+  sales === "李彥伯"
+    ? money(bonus)
+    : sales === "共同成交"
+    ? money(bonus / 2)
+    : "$0"
+}
+=
+${money(boyfriendShare)}
+
+<br><br>
+
+李承峰分潤 =
+基本分潤 ${money(baseShare)}
++
+業務獎金 ${
+  sales === "李承峰"
+    ? money(bonus)
+    : sales === "共同成交"
+    ? money(bonus / 2)
+    : "$0"
+}
+=
+${money(brotherShare)}
   `;
 
   mobileLastData = {
