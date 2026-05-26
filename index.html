@@ -1264,7 +1264,252 @@ window.downloadCSV = async function() {
 
   URL.revokeObjectURL(url);
 };
+// ===============================
+// 手機版分步流程 JS
+// ===============================
+let mobileType = null;
+let mobileLastData = null;
 
+document.getElementById("mCaseDate").value = today;
+document.getElementById("mCarDate").value = today;
+
+function mGetNumber(id) {
+  return Number(document.getElementById(id).value) || 0;
+}
+
+function mGetValue(id) {
+  return document.getElementById(id).value.trim();
+}
+
+function mobileShowPanel(panelId, stepNumber) {
+  document.querySelectorAll(".mobile-panel").forEach(panel => {
+    panel.classList.remove("active");
+  });
+
+  document.getElementById(panelId).classList.add("active");
+
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById("mStep" + i).classList.toggle("active", i <= stepNumber);
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+window.mobileSelectType = function(type) {
+  mobileType = type;
+  mobileLastData = null;
+
+  if (type === "case") {
+    document.getElementById("mobileRulesTitle").textContent = "一般案件分潤規則";
+    document.getElementById("mobileRulesContent").innerHTML = `
+      <div class="rule-item"><strong>1. 先扣除所有成本</strong><p>客戶收費扣掉材料、外包、運費、雜支後，才是案件真正淨利。</p></div>
+      <div class="rule-item"><strong>2. 設備／材料基金 10%</strong><p>先從案件淨利中保留 10%，作為設備、工具更新、材料補貨與未來營運資金。</p></div>
+      <div class="rule-item"><strong>3. 業務獎金 20%</strong><p>誰負責客戶聯繫、接洽、報價、溝通與成交，誰取得業務獎金。</p></div>
+      <div class="rule-item"><strong>4. 剩餘利潤再對半分</strong><p>扣除設備基金與業務獎金後，剩餘利潤由李彥伯與李承峰各分配 50%。</p></div>
+      <div class="rule-item"><strong>5. 賠本案件共同承擔</strong><p>若案件虧損，則不提撥設備基金、不發放業務獎金，虧損金額由兩人平均承擔。</p></div>
+    `;
+  } else {
+    document.getElementById("mobileRulesTitle").textContent = "中古車買賣分潤規則";
+    document.getElementById("mobileRulesContent").innerHTML = `
+      <div class="rule-item"><strong>1. 先計算車輛實際淨利</strong><p>賣出價格扣掉買入價格、整備成本、其他成本後，才是這台車真正賺到的金額。</p></div>
+      <div class="rule-item"><strong>2. 依投入比例分潤</strong><p>因為每台車的投入金額不同，所以不採用 50/50，而是依照實際出資比例分配。</p></div>
+      <div class="rule-item"><strong>3. 賠錢也依投入比例承擔</strong><p>若車輛最後虧損，則虧損金額也依照投入比例承擔。</p></div>
+    `;
+  }
+
+  mobileShowPanel("mobileRules", 2);
+};
+
+window.mobileGoChoose = function() {
+  mobileLastData = null;
+  mobileShowPanel("mobileChoose", 1);
+};
+
+window.mobileGoRules = function() {
+  mobileShowPanel("mobileRules", 2);
+};
+
+window.mobileGoForm = function() {
+  document.getElementById("mobileFormTitle").textContent =
+    mobileType === "case" ? "輸入一般案件資料" : "輸入中古車買賣資料";
+
+  document.getElementById("mobileCaseForm").style.display =
+    mobileType === "case" ? "block" : "none";
+
+  document.getElementById("mobileCarForm").style.display =
+    mobileType === "car" ? "block" : "none";
+
+  mobileShowPanel("mobileForm", 3);
+};
+
+window.mobileCalculate = function() {
+  if (mobileType === "case") {
+    mobileCalculateCase();
+  } else {
+    mobileCalculateCar();
+  }
+};
+
+function mobileCalculateCase() {
+  const date = mGetValue("mCaseDate");
+  const name = mGetValue("mCaseName") || "未命名案件";
+  const customer = mGetValue("mCaseCustomer") || "未填客戶";
+  const plate = mGetValue("mCasePlate") || "未填車牌";
+  const sales = mGetValue("mCaseSales");
+  const income = mGetNumber("mCaseIncome");
+  const cost = mGetNumber("mCaseCost");
+  const profit = income - cost;
+
+  if (income <= 0) {
+    alert("請輸入客戶收費");
+    return;
+  }
+
+  let fund = 0;
+  let bonus = 0;
+  let remainProfit = 0;
+  let baseShare = 0;
+  let boyfriendShare = 0;
+  let brotherShare = 0;
+
+  if (profit > 0) {
+    fund = profit * 0.1;
+    bonus = profit * 0.2;
+    remainProfit = profit - fund - bonus;
+    baseShare = remainProfit / 2;
+    boyfriendShare = baseShare + (sales === "李彥伯" ? bonus : 0);
+    brotherShare = baseShare + (sales === "李承峰" ? bonus : 0);
+  } else {
+    baseShare = profit / 2;
+    boyfriendShare = baseShare;
+    brotherShare = baseShare;
+  }
+
+  document.getElementById("mobileResultBoxes").innerHTML = `
+    <div class="result-box"><span>案件淨利</span><b>${money(profit)}</b></div>
+    <div class="result-box"><span>設備基金</span><b>${money(fund)}</b></div>
+    <div class="result-box"><span>業務獎金</span><b>${money(bonus)}</b></div>
+    <div class="result-box dark"><span>李彥伯最後金額</span><b>${money(boyfriendShare)}</b></div>
+    <div class="result-box"><span>李承峰最後金額</span><b>${money(brotherShare)}</b></div>
+  `;
+
+  document.getElementById("mobileProcess").innerHTML = `
+    <b>計算過程：</b>
+    案件淨利 = 客戶收費 ${money(income)} - 總成本 ${money(cost)} = ${money(profit)}<br>
+    設備基金 = ${money(fund)}<br>
+    業務獎金 = ${money(bonus)}<br>
+    業務成交人：${sales}<br>
+    李彥伯分潤 = ${money(boyfriendShare)}<br>
+    李承峰分潤 = ${money(brotherShare)}
+  `;
+
+  mobileLastData = {
+    type: "一般案件",
+    date,
+    name,
+    customer,
+    plate,
+    sales,
+    income,
+    cost,
+    profit,
+    fund,
+    bonus,
+    boyfriendShare,
+    brotherShare,
+    createdAt: serverTimestamp()
+  };
+
+  mobileShowPanel("mobileResult", 4);
+}
+
+function mobileCalculateCar() {
+  const date = mGetValue("mCarDate");
+  const name = mGetValue("mCarName") || "未命名車輛";
+  const note = mGetValue("mCarNote");
+  const buyPrice = mGetNumber("mCarBuyPrice");
+  const repairCost = mGetNumber("mCarRepairCost");
+  const otherCost = mGetNumber("mCarOtherCost");
+  const sellPrice = mGetNumber("mCarSellPrice");
+  const boyfriendInvest = mGetNumber("mCarBoyfriendInvest");
+  const brotherInvest = mGetNumber("mCarBrotherInvest");
+
+  const totalCost = buyPrice + repairCost + otherCost;
+  const profit = sellPrice - totalCost;
+  const totalInvest = boyfriendInvest + brotherInvest;
+
+  if (sellPrice <= 0) {
+    alert("請輸入賣出價格");
+    return;
+  }
+
+  if (totalInvest <= 0) {
+    alert("請輸入李彥伯與李承峰的投入金額");
+    return;
+  }
+
+  const boyfriendRate = boyfriendInvest / totalInvest;
+  const brotherRate = brotherInvest / totalInvest;
+
+  const boyfriendShare = profit * boyfriendRate;
+  const brotherShare = profit * brotherRate;
+
+  document.getElementById("mobileResultBoxes").innerHTML = `
+    <div class="result-box"><span>車輛淨利</span><b>${money(profit)}</b></div>
+    <div class="result-box"><span>總投入金額</span><b>${money(totalInvest)}</b></div>
+    <div class="result-box"><span>李彥伯投入比例</span><b>${(boyfriendRate * 100).toFixed(1)}%</b></div>
+    <div class="result-box dark"><span>李彥伯分潤</span><b>${money(boyfriendShare)}</b></div>
+    <div class="result-box"><span>李承峰分潤</span><b>${money(brotherShare)}</b></div>
+  `;
+
+  document.getElementById("mobileProcess").innerHTML = `
+    <b>計算過程：</b>
+    總成本 = ${money(totalCost)}<br>
+    車輛淨利 = ${money(profit)}<br>
+    總投入金額 = ${money(totalInvest)}<br>
+    李彥伯投入比例 = ${(boyfriendRate * 100).toFixed(1)}%<br>
+    李承峰投入比例 = ${(brotherRate * 100).toFixed(1)}%<br>
+    李彥伯分潤 = ${money(boyfriendShare)}<br>
+    李承峰分潤 = ${money(brotherShare)}
+  `;
+
+  mobileLastData = {
+    type: "中古車投資",
+    date,
+    name,
+    note,
+    buyPrice,
+    repairCost,
+    otherCost,
+    sellPrice,
+    totalCost,
+    profit,
+    fund: 0,
+    bonus: 0,
+    boyfriendInvest,
+    brotherInvest,
+    boyfriendRate,
+    brotherRate,
+    boyfriendShare,
+    brotherShare,
+    createdAt: serverTimestamp()
+  };
+
+  mobileShowPanel("mobileResult", 4);
+}
+
+window.mobileSaveRecord = async function() {
+  if (!mobileLastData) {
+    alert("請先完成計算");
+    return;
+  }
+
+  await addDoc(recordsRef, mobileLastData);
+  alert("案件已儲存");
+  mobileLastData = null;
+  loadRecords();
+  mobileGoChoose();
+};
 
 /* =========================
    初始化載入
