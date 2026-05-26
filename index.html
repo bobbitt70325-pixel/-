@@ -184,7 +184,7 @@
       gap: 14px;
     }
 
-    .result-grid {
+    .car-result-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 14px;
@@ -471,6 +471,7 @@
               <select id="caseSales">
                 <option value="李彥伯">李彥伯</option>
                 <option value="李承峰">李承峰</option>
+                <option value="共同成交">共同成交</option>
               </select>
             </div>
           </div>
@@ -622,10 +623,10 @@
         </div>
       </div>
 
-      <div class="card result-card">
+      <div class="car-result-card">
         <h2>中古車計算結果</h2>
 
-        <div class="result-grid">
+        <div class="car-result-grid">
           <div class="result-box">
             <span>車輛淨利</span>
             <b id="carProfitText">$0</b>
@@ -954,11 +955,20 @@ style="margin-left:10px;width:auto;">
         boyfriendShare = baseShare;
         brotherShare = baseShare;
 
-        if (sales === "李彥伯") {
-          boyfriendShare += bonus;
-        } else {
-          brotherShare += bonus;
-        }
+if (sales === "李彥伯") {
+
+  boyfriendShare += bonus;
+
+} else if (sales === "李承峰") {
+
+  brotherShare += bonus;
+
+} else if (sales === "共同成交") {
+
+  boyfriendShare += bonus / 2;
+  brotherShare += bonus / 2;
+
+}
       } else {
         fund = 0;
         bonus = 0;
@@ -1035,6 +1045,7 @@ style="margin-left:10px;width:auto;">
     window.calculateCar = function() {
       const date = getValue("carDate");
       const name = getValue("carName") || "未命名車輛";
+      const note = getValue("carNote");
 
       const buyPrice = getNumber("carBuyPrice");
       const repairCost = getNumber("carRepairCost");
