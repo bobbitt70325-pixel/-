@@ -29,14 +29,14 @@
 
             <div class="form-group">
               <label>案件名稱</label>
-              <input id="caseName" type="text" placeholder="例如：安卓機安裝">
+              <input id="caseName" type="text" placeholder="例如：安卓機">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label>客戶名稱</label>
-              <input id="customerName" type="text" placeholder="例如：王先生">
+              <input id="customerName" type="text" placeholder="例如：林XX">
             </div>
 
             <div class="form-group">
@@ -48,12 +48,12 @@
           <div class="form-row">
             <div class="form-group">
               <label>客戶收費</label>
-              <input id="income" type="number" placeholder="例如：100000">
+              <input id="income" type="number" placeholder="例如：1000">
             </div>
 
             <div class="form-group">
               <label>總成本</label>
-              <input id="cost" type="number" placeholder="例如：60000">
+              <input id="cost" type="number" placeholder="例如：100">
             </div>
           </div>
 
@@ -91,6 +91,11 @@
           <div class="step">
             <h3>4. 剩餘利潤再對半分</h3>
             <p>扣除設備資金與業務獎金後，剩餘利潤由李彥伯與李承峰各分配 50%。</p>
+          </div>
+
+          <div class="step">
+            <h3>5. 賠本案件共同承擔</h3>
+            <p>若案件虧損，則不提撥設備基金、不發放業務獎金，虧損金額由兩人平均承擔。</p>
           </div>
 
           <div class="notice">
@@ -136,6 +141,11 @@
 
         <div class="result-grid">
           <div class="result-box">
+            <span>案件狀態</span>
+            <strong id="caseStatus">未計算</strong>
+          </div>
+
+          <div class="result-box">
             <span>案件淨利</span>
             <strong id="netProfit">$0</strong>
           </div>
@@ -151,12 +161,12 @@
           </div>
 
           <div class="result-box highlight">
-            <span>李彥伯最後可拿</span>
+            <span>李彥伯最後金額</span>
             <strong id="yanboMoney">$0</strong>
           </div>
 
           <div class="result-box">
-            <span>李承峰最後可拿</span>
+            <span>李承峰最後金額</span>
             <strong id="chengfengMoney">$0</strong>
           </div>
         </div>
@@ -182,6 +192,7 @@
               <tr>
                 <th>操作</th>
                 <th>日期</th>
+                <th>狀態</th>
                 <th>案件名稱</th>
                 <th>客戶</th>
                 <th>車牌</th>
