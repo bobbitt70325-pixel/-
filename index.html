@@ -25,7 +25,12 @@
       --radius-sm: 14px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+       box-sizing: border-box;
+       transition: none !important;
+       animation: none !important;
+       scroll-behavior: auto !important;
+    }
 
     body {
       margin: 0;
@@ -1472,7 +1477,7 @@ function mobileShowPanel(panelId, stepNumber) {
     document.getElementById("mStep" + i).classList.toggle("active", i <= stepNumber);
   }
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo(0, 0);
 }
 
 window.mobileSelectType = function(type) {
