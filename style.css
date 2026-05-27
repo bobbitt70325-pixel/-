@@ -449,11 +449,18 @@ th {
   background: #fff;
   border-radius: 20px;
   padding: 20px;
+  padding-bottom: 40px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+  height: auto;
+  overflow: visible;
 }
 
 .mobile-rule-card .rule-item:last-child {
   border-bottom: 0;
+}
+
+.mobile-rule-card .rule-item {
+  display: block;
 }
 
 .mobile-result-stack {
