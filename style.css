@@ -355,7 +355,7 @@ textarea {
 
 table {
   width: 100%;
-  min-width: 1050px;
+  min-width: 1180px;
   border-collapse: collapse;
   margin-top: 16px;
   overflow: hidden;
@@ -647,6 +647,106 @@ th {
   border: 1px solid #fed7aa;
 }
 
+.car-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.car-status-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.edit-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.action-cell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-btn,
+.close-btn,
+.delete-btn {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.edit-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.close-btn {
+  background: #f59e0b;
+  color: #111;
+}
+
+.delete-btn {
+  background: #dc2626;
+  color: #fff;
+}
+
+.mobile-edit-btn {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 900;
+}
+
+th,
+td {
+  white-space: nowrap;
+}
+
+td:nth-child(4),
+th:nth-child(4) {
+  min-width: 90px;
+}
+
+.record-note-box {
+  display: grid;
+  gap: 8px;
+}
+
+.pass-through-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.pass-through-label {
+  min-width: 90px;
+  font-weight: 900;
+  color: #111;
+}
+
+.pass-through-content {
+  color: #475569;
+}
+
 @media (max-width: 900px) {
   .desktop-app {
     display: none;
@@ -689,4 +789,476 @@ th {
   .record-search-input {
     width: 100%;
   }
+}
+
+
+.status-hint {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-radius: 14px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-closed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.car-pending-record-row td {
+  background: #fefce8;
+}
+
+.car-pending-record-row:hover td {
+  background: #fef3c7;
+}
+
+.close-btn {
+  background: #f59e0b;
+  color: #111;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+  margin-right: 8px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-card {
+  width: min(520px, 100%);
+  background: #fff;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.modal-desc {
+  color: #475569;
+  line-height: 1.6;
+  margin: -8px 0 16px;
+  font-size: 14px;
+}
+
+.mobile-car-pending-record {
+  background: #fefce8;
+  border: 1px solid #fde68a;
+}
+
+.mobile-close-btn {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f59e0b;
+  color: #111;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .modal {
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    border-radius: 22px 22px 0 0;
+  }
+}
+
+
+
+/* ===== Desktop records card layout ===== */
+.desktop-record-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.desktop-record-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  border: 1px solid #eef2f7;
+}
+
+.desktop-record-card.car-record-card {
+  background: #fffbea;
+  border-color: #fde68a;
+}
+
+.desktop-record-card.case-record-card {
+  background: #ffffff;
+}
+
+.desktop-record-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.record-type {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.record-title {
+  margin-top: 6px;
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #111827;
+}
+
+.record-date {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.desktop-record-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.record-item {
+  background: rgba(248, 250, 252, 0.92);
+  border-radius: 16px;
+  padding: 16px;
+  min-height: 82px;
+}
+
+.car-record-card .record-item {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.record-item span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.record-item strong {
+  display: block;
+  color: #111827;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 900;
+  white-space: normal;
+}
+
+.desktop-record-extra {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.record-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  background: rgba(241, 245, 249, 0.88);
+  padding: 13px 16px;
+  border-radius: 14px;
+  color: #475569;
+}
+
+.car-record-card .record-info-row {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.record-info-label {
+  min-width: 90px;
+  color: #111827;
+  font-weight: 900;
+}
+
+.record-info-content {
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.record-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.record-actions button {
+  min-width: 72px;
+}
+
+@media (max-width: 1100px) {
+  .desktop-record-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+
+/* ===== Mixed records layout: cases table + car cards ===== */
+.record-section {
+  margin-top: 22px;
+}
+
+.record-section h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.case-record-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.case-record-table th,
+.case-record-table td {
+  white-space: nowrap;
+}
+
+.desktop-record-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.desktop-record-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  border: 1px solid #eef2f7;
+}
+
+.desktop-record-card.car-record-card {
+  background: #fffbea;
+  border-color: #fde68a;
+}
+
+.desktop-record-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.desktop-record-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.record-type {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.record-title {
+  margin-top: 6px;
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #111827;
+}
+
+.record-date {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.desktop-record-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.car-only-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.record-item {
+  background: rgba(255, 255, 255, 0.74);
+  border-radius: 16px;
+  padding: 16px;
+  min-height: 82px;
+}
+
+.record-item span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.record-item strong {
+  display: block;
+  color: #111827;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 900;
+  white-space: normal;
+}
+
+.desktop-record-extra {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.record-info-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: start;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 13px 16px;
+  border-radius: 14px;
+  color: #475569;
+}
+
+.record-info-label {
+  color: #111827;
+  font-weight: 900;
+}
+
+.record-info-content {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.record-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.record-actions-top {
+  justify-content: flex-end;
+}
+
+.record-actions button {
+  min-width: 72px;
+}
+
+@media (max-width: 1100px) {
+  .desktop-record-grid,
+  .car-only-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+
+/* ===== Mobile car collapsible detail ===== */
+.mobile-detail-toggle {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff7ed;
+  color: #92400e;
+  font-weight: 900;
+  border: 1px solid #fed7aa;
+}
+
+.mobile-record-detail {
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 14px;
+  padding: 8px 12px;
+  border: 1px solid #fde68a;
+}
+
+.mobile-record-detail p {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-record-detail p:last-child {
+  border-bottom: none;
+}
+
+.mobile-record-detail span {
+  color: #475569;
+}
+
+.mobile-record-detail b {
+  text-align: right;
+}
+
+
+
+/* ===== Pass-through cost mode hint ===== */
+select[id$="PassThroughCostMode"] {
+  font-weight: 800;
+}
+
+
+
+/* ===== Close modal pass-through status behavior ===== */
+#closeCarPassThroughReceived:disabled,
+#closeCarPassThroughCostMode:disabled {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
 }
