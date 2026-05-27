@@ -145,7 +145,8 @@
     <section id="carPage" class="page">
       <div class="two-col">
         <div class="card">
-          <h2>新增中古車投資案件</h2>
+          <h2 class="car-title"> 新增中古車投資案件<span class="car-status-badge">進行中</span></h2>
+          <div class="status-hint">新增後會先以「進行中」儲存；賣出後請到「所有紀錄」按「結案」。</div>
 
           <div class="form-grid">
             <div>
@@ -170,12 +171,21 @@
 
             <div>
               <label>其他成本</label>
-              <input id="carOtherCost" type="number" placeholder="稅金、保險、停車費等">
+              <input id="carOtherCost" type="number" placeholder="拖車、廣告、停車、驗車等">
             </div>
 
             <div>
-              <label>賣出價格</label>
-              <input id="carSellPrice" type="number" placeholder="例如：320000">
+              <label>代收代付</label>
+              <input id="carPassThrough" type="number" placeholder="稅金、過戶費、保險等，不列入成本">
+            </div>
+
+            <div>
+              <label>代墊人</label>
+              <select id="carPassThroughPayer">
+                <option value="李彥伯">李彥伯</option>
+                <option value="李承灃">李承灃</option>
+                <option value="第三投資人">第三投資人</option>
+              </select>
             </div>
 
             <div>
@@ -189,105 +199,41 @@
             </div>
 
             <div>
-                <label>第三投資人姓名</label>
-                <input id="carThirdName" placeholder="例如：陳冠如">
+              <label>第三投資人姓名</label>
+              <input id="carThirdName" placeholder="例如：陳冠如">
             </div>
 
             <div>
-                <label>第三投資人投入金額</label>
-                <input id="carThirdInvest" type="number" placeholder="例如：50000">
+              <label>第三投資人投入金額</label>
+              <input id="carThirdInvest" type="number" placeholder="例如：50000">
             </div>
           </div>
 
-            
-
-          <button class="btn btn-dark" onclick="calculateCar()">開始計算</button>
-          <button class="btn btn-blue" onclick="saveCar()">儲存中古車案件</button>
+          <button class="btn btn-blue" onclick="saveCarPending()">儲存進行中案件</button>
         </div>
 
         <div class="card">
           <h2>中古車分潤說明</h2>
 
           <div class="rule-item">
-            <strong>1. 先計算車輛實際淨利</strong>
-            <p>賣出價格扣掉買入價格、整備成本、其他成本後，才是這台車真正賺到的金額。</p>
+            <strong>1. 新增時先是進行中</strong>
+            <p>買車當下先記錄投入、買入、整備、其他成本與代收代付，不計算正式分潤。</p>
           </div>
 
           <div class="rule-item">
-            <strong>2. 依投入比例分潤</strong>
-            <p>因為每台車的投入金額不同，所以不採用 50/50，而是依照實際出資比例分配。</p>
+            <strong>2. 代收代付不列入成本</strong>
+            <p>稅金、過戶費、保險等若買家會另外支付，只記錄代墊人與收回狀態，不影響淨利。</p>
           </div>
 
           <div class="rule-item">
-            <strong>3. 賠錢也依投入比例承擔</strong>
-            <p>若車輛最後虧損，則虧損金額也依照投入比例承擔。</p>
+            <strong>3. 賣出後再結案</strong>
+            <p>車賣出後，到所有紀錄按「結案」，輸入賣出價格，系統才正式計算分潤。</p>
           </div>
 
-          <div class="note">中古車投資屬於資金風險型案件，因此使用投入比例分潤最公平。</div>
-        </div>
-      </div>
-
-      <div class="card result-card">
-        <h2>中古車計算結果</h2>
-
-        <div class="car-result-section">
-  <h3>案件總覽</h3>
-  <div class="car-result-grid two">
-    <div class="result-box">
-      <span>車輛淨利</span>
-      <b id="carProfitText">$0</b>
-    </div>
-
-    <div class="result-box">
-      <span>總投入金額</span>
-      <b id="carInvestText">$0</b>
-    </div>
-  </div>
-</div>
-
-<div class="car-result-section">
-  <h3>投入比例</h3>
-  <div class="car-result-grid three">
-    <div class="result-box dark">
-      <span>李彥伯投入比例</span>
-      <b id="carBoyfriendRateText">0%</b>
-    </div>
-
-    <div class="result-box">
-      <span>李承灃投入比例</span>
-      <b id="carBrotherRateText">0%</b>
-    </div>
-
-    <div class="result-box">
-      <span id="carThirdRateNameText">第三投資人投入比例</span>
-      <b id="carThirdRateText">0%</b>
-    </div>
-  </div>
-</div>
-
-<div class="car-result-section">
-  <h3>分潤結果</h3>
-  <div class="car-result-grid three">
-    <div class="result-box dark">
-      <span>李彥伯分潤</span>
-      <b id="carBoyfriendShareText">$0</b>
-    </div>
-
-    <div class="result-box">
-      <span>李承灃分潤</span>
-      <b id="carBrotherShareText">$0</b>
-    </div>
-
-    <div class="result-box">
-      <span id="carThirdNameText">第三投資人分潤</span>
-      <b id="carThirdShareText">$0</b>
-    </div>
-  </div>
-</div>
-
-        <div class="process" id="carProcess">
-          <b>計算過程：</b>
-          請輸入中古車資料後按下「開始計算」。
+          <div class="rule-item">
+            <strong>4. 依投入比例分潤</strong>
+            <p>車輛淨利依照三位投資人的投入比例分配；若虧損，也依比例承擔。</p>
+          </div>
         </div>
       </div>
     </section>
@@ -317,54 +263,51 @@
 
       <div class="card">
         <div class="record-toolbar">
+          <div class="record-toolbar-left">
+            <h2>所有紀錄</h2>
 
-  <div class="record-toolbar-left">
+            <input
+              id="recordSearchInput"
+              class="record-search-input"
+              type="text"
+              placeholder="搜尋日期、名稱、客戶、車牌、備註..."
+              oninput="loadRecords()"
+            />
+          </div>
 
-    <h2>所有紀錄</h2>
+          <div class="record-toolbar-right">
+            <button class="btn btn-dark" onclick="downloadCSV()">下載 CSV</button>
+            <button class="btn btn-red" onclick="clearAllRecords()">清空所有紀錄</button>
+          </div>
+        </div>
 
-    <input
-      id="recordSearchInput"
-      class="record-search-input"
-      type="text"
-      placeholder="搜尋日期、名稱、客戶、車牌、備註..."
-      oninput="loadRecords()"
-    />
+        <div class="record-section">
+          <h3>一般案件</h3>
 
-  </div>
+          <table class="case-record-table">
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>類型</th>
+                <th>名稱</th>
+                <th>客戶</th>
+                <th>車牌</th>
+                <th>淨利</th>
+                <th>設備基金</th>
+                <th>業務獎金</th>
+                <th>李彥伯</th>
+                <th>李承灃</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="caseRecordsTable"></tbody>
+          </table>
+        </div>
 
-  <div class="record-toolbar-right">
-
-    <button class="btn btn-dark" onclick="downloadCSV()">
-      下載 CSV
-    </button>
-
-    <button class="btn btn-red" onclick="clearAllRecords()">
-      清空所有紀錄
-    </button>
-
-  </div>
-
-</div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>類型</th>
-              <th>名稱</th>
-              <th>客戶</th>
-              <th>車牌</th>
-              <th>淨利</th>
-              <th>設備基金</th>
-              <th>業務獎金</th>
-              <th>李彥伯</th>
-              <th>李承灃</th>
-              <th>第三投資人</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="recordsTable"></tbody>
-        </table>
+        <div class="record-section">
+          <h3>中古車投資</h3>
+          <div id="carRecordsList" class="desktop-record-list"></div>
+        </div>
       </div>
     </section>
   </div>
@@ -393,12 +336,12 @@
 
         <button class="mobile-choice-card" onclick="mobileSelectType('car')">
           <strong>中古車買賣</strong>
-          <span>買車、整理、轉售。依照李彥伯與李承灃的投入金額比例分潤。</span>
+          <span>買車、整理、轉售。先記錄進行中，賣出後再結案計算分潤。</span>
         </button>
 
         <button class="mobile-choice-card" onclick="mobileShowRecords()">
           <strong>查看所有紀錄</strong>
-          <span>用手機圖卡方式查看所有案件，也可以刪除單筆紀錄。</span>
+          <span>用手機圖卡方式查看所有案件，也可以刪除或結案中古車案件。</span>
         </button>
       </div>
     </section>
@@ -408,14 +351,14 @@
       <div class="mobile-rule-card" id="mobileRulesContent"></div>
 
       <div class="mobile-actions">
-        <button class="btn btn-dark" onclick="mobileGoForm()">開始計算</button>
+        <button class="btn btn-dark" onclick="mobileGoForm()">開始填寫</button>
         <button class="btn btn-light" onclick="mobileGoChoose()">返回選擇</button>
       </div>
     </section>
 
     <section id="mobileForm" class="mobile-panel">
       <h2 class="mobile-step-title" id="mobileFormTitle">輸入資料</h2>
-      <p class="mobile-step-desc">填完後按「開始計算」，下一頁會顯示完整結果。</p>
+      <p class="mobile-step-desc">一般案件可直接計算；中古車會先以「進行中」儲存，賣出後再結案。</p>
 
       <div id="mobileCaseForm" class="mobile-card">
         <div class="mobile-form-grid">
@@ -459,6 +402,8 @@
       </div>
 
       <div id="mobileCarForm" class="mobile-card hidden">
+        <div class="status-hint">新增後會先以「進行中」儲存；賣出後請到「所有紀錄」按「結案」。</div>
+
         <div class="mobile-form-grid">
           <div>
             <label>案件日期</label>
@@ -478,11 +423,19 @@
           </div>
           <div>
             <label>其他成本</label>
-            <input id="mCarOtherCost" type="number" placeholder="例如：5000">
+            <input id="mCarOtherCost" type="number" placeholder="拖車、廣告、停車、驗車等">
           </div>
           <div>
-            <label>賣出價格</label>
-            <input id="mCarSellPrice" type="number" placeholder="例如：320000">
+            <label>代收代付</label>
+            <input id="mCarPassThrough" type="number" placeholder="稅金、過戶費、保險等，不列入成本">
+          </div>
+          <div>
+            <label>代墊人</label>
+            <select id="mCarPassThroughPayer">
+              <option value="李彥伯">李彥伯</option>
+              <option value="李承灃">李承灃</option>
+              <option value="第三投資人">第三投資人</option>
+            </select>
           </div>
           <div>
             <label>李彥伯投入金額</label>
@@ -493,26 +446,25 @@
             <input id="mCarBrotherInvest" type="number" placeholder="例如：70000">
           </div>
           <div>
-              <label>第三投資人姓名</label>
-              <input id="mCarThirdName" placeholder="例如：陳冠如">
+            <label>第三投資人姓名</label>
+            <input id="mCarThirdName" placeholder="例如：陳冠如">
           </div>
-
           <div>
-              <label>第三投資人投入金額</label>
-              <input id="mCarThirdInvest" type="number" placeholder="例如：50000">
+            <label>第三投資人投入金額</label>
+            <input id="mCarThirdInvest" type="number" placeholder="例如：50000">
           </div>
         </div>
       </div>
 
       <div class="mobile-actions">
-        <button class="btn btn-dark" onclick="mobileCalculate()">開始計算</button>
+        <button class="btn btn-dark" onclick="mobileCalculate()">下一步</button>
         <button class="btn btn-light" onclick="mobileGoRules()">返回規則</button>
       </div>
     </section>
 
     <section id="mobileResult" class="mobile-panel">
-      <h2 class="mobile-step-title">計算結果</h2>
-      <p class="mobile-step-desc">確認金額沒有問題後，就可以儲存案件。</p>
+      <h2 class="mobile-step-title">確認結果</h2>
+      <p class="mobile-step-desc">確認資料沒有問題後，就可以儲存。</p>
 
       <div class="mobile-result-stack" id="mobileResultBoxes"></div>
       <div class="process" id="mobileProcess"></div>
@@ -527,25 +479,59 @@
     <section id="mobileRecords" class="mobile-panel">
       <h2 class="mobile-step-title">所有紀錄</h2>
 
-      
-
       <div id="mobileRecordsSummary"></div>
 
-        <input
-          id="mobileRecordSearch"
-          class="mobile-record-search"
-          type="text"
-          placeholder="搜尋客戶、車牌、備註..."
-          oninput="loadMobileRecords()"
-        />
+      <input
+        id="mobileRecordSearch"
+        class="mobile-record-search"
+        type="text"
+        placeholder="搜尋客戶、車牌、備註..."
+        oninput="loadMobileRecords()"
+      />
 
-    <div id="mobileRecordsList"></div>
+      <div id="mobileRecordsList"></div>
 
       <div class="mobile-actions">
         <button class="btn btn-dark" onclick="downloadCSV()">下載 CSV</button>
         <button class="btn btn-light" onclick="mobileGoChoose()">返回首頁</button>
       </div>
     </section>
+  </div>
+
+  <div id="closeCarModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>結案中古車案件</h2>
+      <p id="closeCarTitle" class="modal-desc"></p>
+
+      <input id="closeCarRecordId" type="hidden">
+
+      <label>賣出價格</label>
+      <input id="closeCarSellPrice" type="number" placeholder="例如：320000">
+
+      <label>代收代付狀態</label>
+      <select id="closeCarPassThroughStatus" onchange="handleClosePassThroughStatusChange()">
+        <option value="未收回">未收回</option>
+        <option value="部分收回">部分收回</option>
+        <option value="已收回">已收回</option>
+      </select>
+
+      <label>收回金額</label>
+      <input id="closeCarPassThroughReceived" type="number" placeholder="例如：已向買家收回多少">
+
+      <label>未收回金額是否列入成本</label>
+      <select id="closeCarPassThroughCostMode">
+        <option value="列入成本">列入成本</option>
+        <option value="不列入成本">不列入成本</option>
+      </select>
+
+      <div class="mobile-actions">
+        <button class="btn btn-dark" onclick="previewCloseCarFormula()">  先試算分潤</button>
+      <div id="closeCarFormulaPreview" class="process hidden"></div>
+
+        <button class="btn btn-blue" onclick="confirmCloseCar()">確認完結</button>
+        <button class="btn btn-light" onclick="closeCloseCarModal()">取消</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>
