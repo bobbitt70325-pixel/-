@@ -160,7 +160,7 @@ function calculateCarShares(data, sellPrice) {
   const thirdName = data.thirdName || "第三投資人";
 
   const totalCost = buyPrice + repairCost + otherCost + absorbedPassThrough;
-  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
+  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest + repairCost + otherCost;
   const profit = Number(sellPrice || 0) - totalCost;
 
   const boyfriendRate = totalInvest > 0 ? boyfriendInvest / totalInvest : 0;
