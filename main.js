@@ -160,7 +160,7 @@ function calculateCarShares(data, sellPrice) {
   const thirdName = data.thirdName || "第三投資人";
 
   const totalCost = buyPrice + repairCost + otherCost + absorbedPassThrough;
-  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest + repairCost + otherCost;
+  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
   const profit = Number(sellPrice || 0) - totalCost;
 
   const boyfriendRate = totalInvest > 0 ? boyfriendInvest / totalInvest : 0;
@@ -1276,7 +1276,6 @@ async function loadMobileRecords() {
             <p><span>買入價格</span><b>${money(data.buyPrice)}</b></p>
             <p><span>整備成本</span><b>${money(data.repairCost)}</b></p>
             <p><span>其他成本</span><b>${money(data.otherCost)}</b></p>
-            <p><span>總投入金額</span><b>${money(data.totalInvest)}</b></p>
             ${data.passThrough ? `<p><span>代收代付</span><b>${money(data.passThrough)}</b></p>` : ""}
             ${data.passThrough ? `<p><span>代墊狀態</span><b>${data.passThroughPayer || "未填"}｜${data.passThroughStatus || "未結算"}</b></p>` : ""}
             ${data.passThrough ? `<p><span>是否列入成本</span><b>${data.passThroughCostMode || "結案時決定"}</b></p>` : ""}
