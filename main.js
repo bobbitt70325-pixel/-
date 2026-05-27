@@ -839,6 +839,9 @@ window.deleteRecord = async function(id) {
 
   await deleteDoc(doc(db, "profitRecords", id));
 
+  await loadRecords();
+  await loadMobileRecords();
+
   alert("紀錄已刪除");
 
   await loadRecords();
