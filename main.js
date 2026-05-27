@@ -6,6 +6,7 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
   doc,
   serverTimestamp,
   query,
@@ -28,8 +29,10 @@ const recordsRef = collection(db, "profitRecords");
 
 let lastCaseData = null;
 let lastCarData = null;
+let editingCarId = null;
 let mobileType = null;
 let mobileLastData = null;
+let recordsCache = {};
 
 const today = new Date().toISOString().split("T")[0];
 
@@ -50,30 +53,28 @@ function money(num) {
 }
 
 function getNumber(id) {
-  return Number(document.getElementById(id).value) || 0;
+  const element = document.getElementById(id);
+  return element ? Number(element.value) || 0 : 0;
 }
 
 function getValue(id) {
-  return document.getElementById(id).value.trim();
+  const element = document.getElementById(id);
+  return element ? element.value.trim() : "";
 }
 
 function mGetNumber(id) {
-  return Number(document.getElementById(id).value) || 0;
+  const element = document.getElementById(id);
+  return element ? Number(element.value) || 0 : 0;
 }
 
 function mGetValue(id) {
-  return document.getElementById(id).value.trim();
+  const element = document.getElementById(id);
+  return element ? element.value.trim() : "";
 }
 
 function getBonusRate(bonusBase) {
-  if (bonusBase <= 10000) {
-    return 0.1;
-  }
-
-  if (bonusBase <= 20000) {
-    return 0.15;
-  }
-
+  if (bonusBase <= 10000) return 0.1;
+  if (bonusBase <= 20000) return 0.15;
   return 0.2;
 }
 
@@ -117,6 +118,7 @@ function calculateCaseCore({ date, name, customer, plate, sales, note, income, c
 
   return {
     type: "一般案件",
+    status: "已結案",
     date,
     name,
     customer,
@@ -138,15 +140,176 @@ function calculateCaseCore({ date, name, customer, plate, sales, note, income, c
 }
 
 function getSalesBonusText(sales, targetPerson, bonus) {
-  if (sales === "共同成交") {
-    return money(bonus / 2);
-  }
-
-  if (sales === targetPerson) {
-    return money(bonus);
-  }
-
+  if (sales === "共同成交") return money(bonus / 2);
+  if (sales === targetPerson) return money(bonus);
   return "$0";
+}
+
+function calculateCarShares(data, sellPrice) {
+  const buyPrice = Number(data.buyPrice || 0);
+  const repairCost = Number(data.repairCost || 0);
+  const otherCost = Number(data.otherCost || 0);
+  const passThrough = Number(data.passThrough || 0);
+  const passThroughReceived = Number(data.passThroughReceived || 0);
+  const unreceivedPassThrough = Math.max(passThrough - passThroughReceived, 0);
+  const passThroughCostMode = data.passThroughCostMode || "不列入成本";
+  const absorbedPassThrough = passThroughCostMode === "列入成本" ? unreceivedPassThrough : 0;
+  const boyfriendInvest = Number(data.boyfriendInvest || 0);
+  const brotherInvest = Number(data.brotherInvest || 0);
+  const thirdInvest = Number(data.thirdInvest || 0);
+  const thirdName = data.thirdName || "第三投資人";
+
+  const totalCost = buyPrice + repairCost + otherCost + absorbedPassThrough;
+  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
+  const profit = Number(sellPrice || 0) - totalCost;
+
+  const boyfriendRate = totalInvest > 0 ? boyfriendInvest / totalInvest : 0;
+  const brotherRate = totalInvest > 0 ? brotherInvest / totalInvest : 0;
+  const thirdRate = totalInvest > 0 ? thirdInvest / totalInvest : 0;
+
+  const boyfriendShare = profit * boyfriendRate;
+  const brotherShare = profit * brotherRate;
+  const thirdShare = profit * thirdRate;
+
+  return {
+    totalCost,
+    totalInvest,
+    profit,
+    passThrough,
+    passThroughReceived,
+    unreceivedPassThrough,
+    passThroughCostMode,
+    absorbedPassThrough,
+    boyfriendRate,
+    brotherRate,
+    thirdRate,
+    boyfriendShare,
+    brotherShare,
+    thirdShare,
+    thirdName
+  };
+}
+
+function buildCarDataFromDesktop() {
+  const boyfriendInvest = getNumber("carBoyfriendInvest");
+  const brotherInvest = getNumber("carBrotherInvest");
+  const thirdInvest = getNumber("carThirdInvest");
+  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
+
+  if (totalInvest <= 0) {
+    alert("請輸入至少一位投資人的投入金額");
+    return null;
+  }
+
+  const buyPrice = getNumber("carBuyPrice");
+  const repairCost = getNumber("carRepairCost");
+  const otherCost = getNumber("carOtherCost");
+  const passThrough = getNumber("carPassThrough");
+  const passThroughReceived = 0;
+  const absorbedPassThrough = 0;
+  const passThroughStatus = "未結算";
+  const passThroughCostMode = "結案時決定";
+  const totalCost = buyPrice + repairCost + otherCost;
+
+  return {
+    type: "中古車投資",
+    status: "進行中",
+    date: getValue("carDate"),
+    name: getValue("carName") || "未命名車輛",
+    customer: "",
+    plate: "",
+    sales: "",
+    note: "",
+    buyPrice,
+    repairCost,
+    otherCost,
+    passThrough,
+    passThroughReceived,
+    passThroughCostMode,
+    absorbedPassThrough,
+    passThroughPayer: getValue("carPassThroughPayer"),
+    passThroughStatus,
+    sellPrice: 0,
+    totalCost,
+    totalInvest,
+    profit: 0,
+    fund: 0,
+    bonusBase: 0,
+    bonusRate: 0,
+    bonus: 0,
+    boyfriendInvest,
+    brotherInvest,
+    thirdInvest,
+    boyfriendRate: totalInvest > 0 ? boyfriendInvest / totalInvest : 0,
+    brotherRate: totalInvest > 0 ? brotherInvest / totalInvest : 0,
+    thirdRate: totalInvest > 0 ? thirdInvest / totalInvest : 0,
+    boyfriendShare: 0,
+    brotherShare: 0,
+    thirdName: getValue("carThirdName") || "第三投資人",
+    thirdShare: 0,
+    createdAt: serverTimestamp()
+  };
+}
+
+function buildCarDataFromMobile() {
+  const boyfriendInvest = mGetNumber("mCarBoyfriendInvest");
+  const brotherInvest = mGetNumber("mCarBrotherInvest");
+  const thirdInvest = mGetNumber("mCarThirdInvest");
+  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
+
+  if (totalInvest <= 0) {
+    alert("請輸入至少一位投資人的投入金額");
+    return null;
+  }
+
+  const buyPrice = mGetNumber("mCarBuyPrice");
+  const repairCost = mGetNumber("mCarRepairCost");
+  const otherCost = mGetNumber("mCarOtherCost");
+  const passThrough = mGetNumber("mCarPassThrough");
+  const passThroughReceived = 0;
+  const absorbedPassThrough = 0;
+  const passThroughStatus = "未結算";
+  const passThroughCostMode = "結案時決定";
+  const totalCost = buyPrice + repairCost + otherCost;
+
+  return {
+    type: "中古車投資",
+    status: "進行中",
+    date: mGetValue("mCarDate"),
+    name: mGetValue("mCarName") || "未命名車輛",
+    customer: "",
+    plate: "",
+    sales: "",
+    note: "",
+    buyPrice,
+    repairCost,
+    otherCost,
+    passThrough,
+    passThroughReceived,
+    passThroughCostMode,
+    absorbedPassThrough,
+    passThroughPayer: mGetValue("mCarPassThroughPayer"),
+    passThroughStatus,
+    sellPrice: 0,
+    totalCost,
+    totalInvest,
+    profit: 0,
+    fund: 0,
+    bonusBase: 0,
+    bonusRate: 0,
+    bonus: 0,
+    boyfriendInvest,
+    brotherInvest,
+    thirdInvest,
+    boyfriendRate: totalInvest > 0 ? boyfriendInvest / totalInvest : 0,
+    brotherRate: totalInvest > 0 ? brotherInvest / totalInvest : 0,
+    thirdRate: totalInvest > 0 ? thirdInvest / totalInvest : 0,
+    boyfriendShare: 0,
+    brotherShare: 0,
+    thirdName: mGetValue("mCarThirdName") || "第三投資人",
+    thirdShare: 0,
+    createdAt: serverTimestamp()
+  };
 }
 
 window.showPage = function(pageId, btn) {
@@ -235,132 +398,84 @@ window.saveCase = async function() {
   await addDoc(recordsRef, lastCaseData);
   alert("一般案件已儲存");
   lastCaseData = null;
-  loadRecords();
+
+  await loadRecords();
+
+  showPage("recordsPage", document.querySelectorAll(".nav button")[2]);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 };
 
-window.calculateCar = function() {
-  const sellPrice = getNumber("carSellPrice");
+window.saveCarPending = async function() {
+  const data = buildCarDataFromDesktop();
 
-  if (sellPrice <= 0) {
-    alert("請輸入賣出價格");
+  if (!data) {
     return;
   }
 
-  const date = getValue("carDate");
-  const name = getValue("carName") || "未命名車輛";
-  const buyPrice = getNumber("carBuyPrice");
-  const repairCost = getNumber("carRepairCost");
-  const otherCost = getNumber("carOtherCost");
-  const boyfriendInvest = getNumber("carBoyfriendInvest");
-  const brotherInvest = getNumber("carBrotherInvest");
-  const thirdName = getValue("carThirdName") || "第三投資人";
-  const thirdInvest = getNumber("carThirdInvest");
+  if (editingCarId) {
+    await updateDoc(
+      doc(db, "profitRecords", editingCarId),
+      data
+    );
 
-  const totalCost = buyPrice + repairCost + otherCost;
-  const profit = sellPrice - totalCost;
-  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
+    alert("案件已更新");
 
-  if (totalInvest <= 0) {
-    alert("請輸入李彥伯與李承灃的投入金額");
-    return;
+    editingCarId = null;
+
+    document.querySelector("#carPage .btn-blue").textContent = "儲存進行中案件";
+  } else {
+    await addDoc(recordsRef, data);
+
+    alert("中古車進行中案件已儲存");
   }
 
-  const boyfriendRate = boyfriendInvest / totalInvest;
-  const brotherRate = brotherInvest / totalInvest;
-  const thirdRate = thirdInvest / totalInvest;
+  clearDesktopCarForm();
 
-  const boyfriendShare = profit * boyfriendRate;
-  const brotherShare = profit * brotherRate;
-  const thirdShare = profit * thirdRate;
+  await loadRecords();
 
-  document.getElementById("carProfitText").textContent = money(profit);
-  document.getElementById("carInvestText").textContent = money(totalInvest);
-  document.getElementById("carBoyfriendRateText").textContent = (boyfriendRate * 100).toFixed(1) + "%";
-  document.getElementById("carBrotherRateText").textContent = (brotherRate * 100).toFixed(1) + "%";
-  document.getElementById("carThirdRateNameText").textContent =
-  `${thirdName} 投入比例`;
+showPage("recordsPage", document.querySelectorAll(".nav button")[2]);
 
-  document.getElementById("carThirdRateText").textContent =
-  (thirdRate * 100).toFixed(1) + "%";
-  document.getElementById("carThirdRateText").textContent =  (thirdRate * 100).toFixed(1) + "%";
-  document.getElementById("carBoyfriendShareText").textContent = money(boyfriendShare);
-  document.getElementById("carBrotherShareText").textContent = money(brotherShare);
-  document.getElementById("carThirdNameText").textContent =
-  `${thirdName} 分潤`;
-
-  document.getElementById("carThirdShareText").textContent =
-  money(thirdShare);
-  document.getElementById("carThirdNameText").textContent =
-  `${thirdName} 分潤`;
-
-  document.getElementById("carThirdShareText").textContent =
-  money(thirdShare);
-  document.getElementById("carProcess").innerHTML = `
-    <b>計算過程：</b>
-    總成本 = 買入價格 ${money(buyPrice)} + 整備成本 ${money(repairCost)} + 其他成本 ${money(otherCost)} = ${money(totalCost)}<br>
-    車輛淨利 = 賣出價格 ${money(sellPrice)} - 總成本 ${money(totalCost)} = ${money(profit)}<br>
-    總投入金額 = 李彥伯投入 ${money(boyfriendInvest)} + 李承灃投入 ${money(brotherInvest)} = ${money(totalInvest)}<br>
-    李彥伯投入比例 = ${money(boyfriendInvest)} ÷ ${money(totalInvest)} = ${(boyfriendRate * 100).toFixed(1)}%<br>
-    李承灃投入比例 = ${money(brotherInvest)} ÷ ${money(totalInvest)} = ${(brotherRate * 100).toFixed(1)}%<br>
-    ${thirdName} 投入比例 = ${money(thirdInvest)} ÷ ${money(totalInvest)} = ${(thirdRate * 100).toFixed(1)}%<br>
-    李彥伯分潤 = 車輛淨利 ${money(profit)} × ${(boyfriendRate * 100).toFixed(1)}% = ${money(boyfriendShare)}<br>
-    李承灃分潤 = 車輛淨利 ${money(profit)} × ${(brotherRate * 100).toFixed(1)}% = ${money(brotherShare)}<br>
-    ${thirdName} 分潤 = 車輛淨利 ${money(profit)} × ${(thirdRate * 100).toFixed(1)}% = ${money(thirdShare)}
-  `;
-
-  lastCarData = {
-    type: "中古車投資",
-    date,
-    name,
-    customer: "",
-    plate: "",
-    sales: "",
-    note: "",
-    buyPrice,
-    repairCost,
-    otherCost,
-    sellPrice,
-    totalCost,
-    profit,
-    fund: 0,
-    bonusBase: 0,
-    bonusRate: 0,
-    bonus: 0,
-    boyfriendInvest,
-    brotherInvest,
-    boyfriendRate,
-    brotherRate,
-    boyfriendShare,
-    brotherShare,
-    thirdName,
-    thirdInvest,
-    thirdRate,
-    thirdShare,
-    createdAt: serverTimestamp()
-  };
+window.scrollTo({
+  top: 0,
+  behavior: "smooth"
+});
 };
 
-window.saveCar = async function() {
-  if (!lastCarData) {
-    calculateCar();
-  }
+function clearDesktopCarForm() {
+  setValue("carDate", today);
+  setValue("carName", "");
+  setValue("carBuyPrice", "");
+  setValue("carRepairCost", "");
+  setValue("carOtherCost", "");
+  setValue("carPassThrough", "");
+  setValue("carPassThroughPayer", "");
 
-  if (!lastCarData) {
-    return;
-  }
-
-  await addDoc(recordsRef, lastCarData);
-  alert("中古車投資案件已儲存");
-  lastCarData = null;
-  loadRecords();
-};
+  setValue("carBoyfriendInvest", "");
+  setValue("carBrotherInvest", "");
+  setValue("carThirdName", "");
+  setValue("carThirdInvest", "");
+}
 
 async function loadRecords() {
   const q = query(recordsRef, orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
-  const table = document.getElementById("recordsTable");
-  table.innerHTML = "";
+  recordsCache = {};
+
+  const caseTable = document.getElementById("caseRecordsTable");
+  const carList = document.getElementById("carRecordsList");
+
+  if (caseTable) {
+    caseTable.innerHTML = "";
+  }
+
+  if (carList) {
+    carList.innerHTML = "";
+  }
 
   let totalProfit = 0;
   let totalFund = 0;
@@ -369,66 +484,169 @@ async function loadRecords() {
 
   snapshot.forEach(docItem => {
     const data = docItem.data();
+
+    recordsCache[docItem.id] = {
+      id: docItem.id,
+      ...data
+    };
+
     const keyword = document
-  .getElementById("recordSearchInput")
-  ?.value
-  .trim()
-  .toLowerCase() || "";
+      .getElementById("recordSearchInput")
+      ?.value
+      .trim()
+      .toLowerCase() || "";
 
-const searchText = [
-  data.date,
-  data.type,
-  data.name,
-  data.customer,
-  data.plate,
-  data.sales,
-  data.note,
-  data.profit,
-  data.fund,
-  data.bonus,
-  data.boyfriendShare,
-  data.brotherShare
-].join(" ").toLowerCase();
+    const searchText = [
+      data.date,
+      data.type,
+      data.status,
+      data.name,
+      data.customer,
+      data.plate,
+      data.sales,
+      data.note,
+      data.passThrough,
+      data.passThroughPayer,
+      data.passThroughStatus,
+      data.profit,
+      data.fund,
+      data.bonus,
+      data.boyfriendShare,
+      data.brotherShare,
+      data.thirdName,
+      data.thirdShare
+    ].join(" ").toLowerCase();
 
-if (keyword && !searchText.includes(keyword)) {
-  return;
-}
+    if (keyword && !searchText.includes(keyword)) {
+      return;
+    }
 
-    totalProfit += Number(data.profit || 0);
-    totalFund += Number(data.fund || 0);
-    totalBoyfriend += Number(data.boyfriendShare || 0);
-    totalBrother += Number(data.brotherShare || 0);
+    const isCar = data.type === "中古車投資";
+    const isPending = isCar && (data.status || "進行中") === "進行中";
+    const displayStatus = isCar ? (data.status || "進行中") : "已結案";
+    const statusClass = displayStatus === "進行中" ? "status-pending" : "status-closed";
 
-    const rowClass = data.type === "中古車投資" ? "car-record-row" : "case-record-row";
+    if (!isPending) {
+      totalProfit += Number(data.profit || 0);
+      totalFund += Number(data.fund || 0);
+      totalBoyfriend += Number(data.boyfriendShare || 0);
+      totalBrother += Number(data.brotherShare || 0);
+    } else {
+      totalFund += Number(data.fund || 0);
+    }
 
-table.innerHTML += `
-  <tr class="${rowClass}">
-    <td>${data.date || "-"}</td>
-    <td>${data.type || "-"}</td>
-    <td>${data.name || "-"}</td>
-    <td>${data.customer || "-"}</td>
-    <td>${data.plate || "-"}</td>
-    <td>${money(data.profit)}</td>
-    <td>${money(data.fund)}</td>
-    <td>${money(data.bonus)}</td>
-    <td>${money(data.boyfriendShare)}</td>
-    <td>${money(data.brotherShare)}</td>
-    <td>${data.thirdName ? money(data.thirdShare) : "-"}</td>
-    <td>
-      <button class="delete-btn" onclick="deleteRecord('${docItem.id}')">刪除</button>
-    </td>
-  </tr>
-  ${data.note ? `
-<tr class="record-note-row ${rowClass}">
-  <td colspan="11">
-    <div class="record-note-box">
-      <strong>客戶備註</strong>
-      ${data.note}
-    </div>
-  </td>
-</tr>
-` : ""}
-`;
+    if (!isCar) {
+      if (!caseTable) return;
+
+      caseTable.innerHTML += `
+        <tr class="case-record-row">
+          <td>${data.date || "-"}</td>
+          <td>${data.type || "-"}</td>
+          <td>${data.name || "-"}</td>
+          <td>${data.customer || "-"}</td>
+          <td>${data.plate || "-"}</td>
+          <td>${money(data.profit)}</td>
+          <td>${money(data.fund)}</td>
+          <td>${money(data.bonus)}</td>
+          <td>${money(data.boyfriendShare)}</td>
+          <td>${money(data.brotherShare)}</td>
+          <td>
+            <div class="action-cell">
+              <button class="delete-btn" onclick="deleteRecord('${docItem.id}')">刪除</button>
+            </div>
+          </td>
+        </tr>
+
+        ${data.note ? `
+          <tr class="record-note-row case-record-row">
+            <td colspan="11">
+              <div class="record-note-box">
+                <div class="pass-through-row">
+                  <div class="pass-through-label">客戶備註</div>
+                  <div class="pass-through-content">${data.note}</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        ` : ""}
+      `;
+
+      return;
+    }
+
+    if (!carList) return;
+
+    carList.innerHTML += `
+      <div class="desktop-record-card car-record-card">
+
+        <div class="desktop-record-top">
+          <div>
+            <div class="record-type">中古車投資</div>
+            <div class="record-title">${data.name || "未命名車輛"}</div>
+            <div class="record-date">${data.date || "-"}</div>
+          </div>
+
+          <div class="desktop-record-header-right">
+            <span class="status-badge ${statusClass}">${displayStatus}</span>
+
+            <div class="record-actions record-actions-top">
+              ${isPending ? `
+                <button class="edit-btn" onclick="editCarRecord('${docItem.id}')">編輯</button>
+                <button class="close-btn" onclick="openCloseCarModal('${docItem.id}')">結案</button>
+              ` : ""}
+
+              <button class="delete-btn" onclick="deleteRecord('${docItem.id}')">刪除</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="desktop-record-grid car-only-grid">
+          <div class="record-item">
+            <span>淨利</span>
+            <strong>${isPending ? "尚未結案" : money(data.profit)}</strong>
+          </div>
+
+          <div class="record-item">
+            <span>李彥伯</span>
+            <strong>${isPending ? "尚未結案" : money(data.boyfriendShare)}</strong>
+          </div>
+
+          <div class="record-item">
+            <span>李承灃</span>
+            <strong>${isPending ? "尚未結案" : money(data.brotherShare)}</strong>
+          </div>
+
+          <div class="record-item">
+            <span>${data.thirdName || "第三投資人"}</span>
+            <strong>${isPending ? "尚未結案" : money(data.thirdShare)}</strong>
+          </div>
+        </div>
+
+        ${(data.passThrough || data.note) ? `
+          <div class="desktop-record-extra">
+            ${data.passThrough ? `
+              <div class="record-info-row">
+                <div class="record-info-label">代收代付</div>
+                <div class="record-info-content">
+                  <span>${money(data.passThrough)}</span>
+                  <span>代墊人：${data.passThroughPayer || "未填"}</span>
+                  <span>${data.passThroughStatus || "未結算"}</span>
+                  <span>${data.passThroughCostMode || "結案時決定"}</span>
+                </div>
+              </div>
+            ` : ""}
+
+            ${data.note ? `
+              <div class="record-info-row">
+                <div class="record-info-label">客戶備註</div>
+                <div class="record-info-content">${data.note}</div>
+              </div>
+            ` : ""}
+          </div>
+        ` : ""}
+
+      </div>
+    `;
   });
 
   document.getElementById("totalProfit").textContent = money(totalProfit);
@@ -436,6 +654,181 @@ table.innerHTML += `
   document.getElementById("totalBoyfriend").textContent = money(totalBoyfriend);
   document.getElementById("totalBrother").textContent = money(totalBrother);
 }
+
+window.openCloseCarModal = function(id) {
+  const data = recordsCache[id];
+
+  if (!data) {
+    alert("找不到這筆紀錄，請重新整理後再試一次");
+    return;
+  }
+
+  setValue("closeCarRecordId", id);
+  setValue("closeCarSellPrice", data.sellPrice || "");
+  setValue("closeCarPassThroughStatus", data.passThroughStatus === "未結算" ? "未收回" : (data.passThroughStatus || "未收回"));
+  setValue("closeCarPassThroughReceived", data.passThroughReceived || 0);
+  setValue("closeCarPassThroughCostMode", data.passThroughCostMode === "結案時決定" ? "列入成本" : (data.passThroughCostMode || "列入成本"));
+  handleClosePassThroughStatusChange();
+
+  document.getElementById("closeCarTitle").textContent =
+    `${data.name || "未命名車輛"}｜買入 ${money(data.buyPrice)}｜目前成本 ${money(data.totalCost)}`;
+
+  const preview = document.getElementById("closeCarFormulaPreview");
+  if (preview) {
+    preview.classList.add("hidden");
+    preview.innerHTML = "";
+  }
+
+  document.getElementById("closeCarModal").classList.remove("hidden");
+};
+
+window.closeCloseCarModal = function() {
+  document.getElementById("closeCarModal").classList.add("hidden");
+};
+
+
+window.handleClosePassThroughStatusChange = function() {
+  const id = getValue("closeCarRecordId");
+  const data = recordsCache[id] || {};
+  const passThrough = Number(data.passThrough || 0);
+  const status = getValue("closeCarPassThroughStatus");
+  const receivedInput = document.getElementById("closeCarPassThroughReceived");
+  const costModeSelect = document.getElementById("closeCarPassThroughCostMode");
+
+  if (!receivedInput || !costModeSelect) {
+    return;
+  }
+
+  if (status === "未收回") {
+    receivedInput.value = 0;
+    receivedInput.disabled = true;
+    costModeSelect.value = "列入成本";
+    costModeSelect.disabled = true;
+    return;
+  }
+
+  receivedInput.disabled = false;
+  costModeSelect.disabled = false;
+
+  if (status === "已收回") {
+    receivedInput.value = passThrough;
+    costModeSelect.value = "不列入成本";
+  }
+
+  if (status === "部分收回" && Number(receivedInput.value || 0) === 0) {
+    receivedInput.value = "";
+    costModeSelect.value = "列入成本";
+  }
+};
+
+
+window.previewCloseCarFormula = function() {
+  const id = getValue("closeCarRecordId");
+  const data = recordsCache[id];
+  const sellPrice = getNumber("closeCarSellPrice");
+
+  if (!data) {
+    alert("找不到這筆紀錄");
+    return;
+  }
+
+  if (sellPrice <= 0) {
+    alert("請輸入賣出價格");
+    return;
+  }
+
+  const passThroughStatus = getValue("closeCarPassThroughStatus") || "未收回";
+  const passThroughReceived = getNumber("closeCarPassThroughReceived");
+  const passThroughCostMode = getValue("closeCarPassThroughCostMode") || "列入成本";
+
+  const calcData = {
+    ...data,
+    passThroughStatus,
+    passThroughReceived,
+    passThroughCostMode
+  };
+
+  const result = calculateCarShares(calcData, sellPrice);
+  const preview = document.getElementById("closeCarFormulaPreview");
+
+  preview.classList.remove("hidden");
+
+  preview.innerHTML = `
+    <b>結案分潤試算：</b>
+    代收代付金額 = ${money(calcData.passThrough)}｜收回金額 = ${money(calcData.passThroughReceived)}｜未收回 = ${money(result.unreceivedPassThrough)}<br>
+    代收代付狀態 = ${calcData.passThroughStatus}，未收回金額處理 = ${calcData.passThroughCostMode}，列入成本金額 ${money(result.absorbedPassThrough)}<br>
+    總成本 = 買入價格 ${money(calcData.buyPrice)} + 整備成本 ${money(calcData.repairCost)} + 其他成本 ${money(calcData.otherCost)} + 代收代付吸收 ${money(result.absorbedPassThrough)} = ${money(result.totalCost)}<br>
+    車輛淨利 = 賣出價格 ${money(sellPrice)} - 總成本 ${money(result.totalCost)} = ${money(result.profit)}<br><br>
+
+    總投入金額 = 李彥伯 ${money(data.boyfriendInvest)} + 李承灃 ${money(data.brotherInvest)} + ${(data.thirdName || "第三投資人")} ${money(data.thirdInvest)} = ${money(result.totalInvest)}<br>
+
+    李彥伯投入比例 = ${money(data.boyfriendInvest)} ÷ ${money(result.totalInvest)} = ${(result.boyfriendRate * 100).toFixed(1)}%<br>
+    李承灃投入比例 = ${money(data.brotherInvest)} ÷ ${money(result.totalInvest)} = ${(result.brotherRate * 100).toFixed(1)}%<br>
+    ${(data.thirdName || "第三投資人")} 投入比例 = ${money(data.thirdInvest)} ÷ ${money(result.totalInvest)} = ${(result.thirdRate * 100).toFixed(1)}%<br><br>
+
+    李彥伯分潤 = ${money(result.profit)} × ${(result.boyfriendRate * 100).toFixed(1)}% = ${money(result.boyfriendShare)}<br>
+    李承灃分潤 = ${money(result.profit)} × ${(result.brotherRate * 100).toFixed(1)}% = ${money(result.brotherShare)}<br>
+    ${(data.thirdName || "第三投資人")} 分潤 = ${money(result.profit)} × ${(result.thirdRate * 100).toFixed(1)}% = ${money(result.thirdShare)}
+  `;
+};
+
+window.confirmCloseCar = async function() {
+  const id = getValue("closeCarRecordId");
+  const data = recordsCache[id];
+  const sellPrice = getNumber("closeCarSellPrice");
+  const passThroughStatus = getValue("closeCarPassThroughStatus") || "未收回";
+  const passThroughReceived = getNumber("closeCarPassThroughReceived");
+  const passThroughCostMode = getValue("closeCarPassThroughCostMode") || "列入成本";
+
+  if (!data) {
+    alert("找不到這筆紀錄");
+    return;
+  }
+
+  if (sellPrice <= 0) {
+    alert("請輸入賣出價格");
+    return;
+  }
+
+  const calcData = {
+    ...data,
+    passThroughStatus,
+    passThroughReceived,
+    passThroughCostMode
+  };
+
+  const result = calculateCarShares(calcData, sellPrice);
+
+  await updateDoc(doc(db, "profitRecords", id), {
+    status: "已結案",
+    sellPrice,
+    passThroughStatus,
+    passThroughReceived,
+    passThroughCostMode,
+    totalCost: result.totalCost,
+    absorbedPassThrough: result.absorbedPassThrough,
+    passThroughCostMode: result.passThroughCostMode,
+    totalInvest: result.totalInvest,
+    profit: result.profit,
+    boyfriendRate: result.boyfriendRate,
+    brotherRate: result.brotherRate,
+    thirdRate: result.thirdRate,
+    boyfriendShare: result.boyfriendShare,
+    brotherShare: result.brotherShare,
+    thirdShare: result.thirdShare,
+    closedAt: serverTimestamp()
+  });
+
+  
+
+closeCloseCarModal();
+
+await loadRecords();
+
+if (document.getElementById("mobileRecords").classList.contains("active")) {
+  await loadMobileRecords();
+}
+};
 
 window.deleteRecord = async function(id) {
   const ok = confirm("確定刪除這筆紀錄嗎？");
@@ -448,10 +841,10 @@ window.deleteRecord = async function(id) {
 
   alert("紀錄已刪除");
 
-  loadRecords();
+  await loadRecords();
 
   if (document.getElementById("mobileRecords").classList.contains("active")) {
-    loadMobileRecords();
+    await loadMobileRecords();
   }
 };
 
@@ -470,14 +863,14 @@ window.clearAllRecords = async function() {
 
   alert("所有紀錄已清空");
 
-  loadRecords();
+  await loadRecords();
 };
 
 window.downloadCSV = async function() {
   const q = query(recordsRef, orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
-  let csv = "日期,類型,名稱,客戶,車牌,淨利,設備基金,業務獎金,李彥伯,李承灃,客戶備註\n";
+  let csv = "日期,類型,狀態,名稱,客戶,車牌,淨利,設備基金,業務獎金,李彥伯,李承灃,第三投資人,代收代付,代墊人,代收代付狀態,代收代付是否列入成本,代收代付吸收成本,客戶備註\n";
 
   snapshot.forEach(docItem => {
     const data = docItem.data();
@@ -485,6 +878,7 @@ window.downloadCSV = async function() {
     csv += [
       data.date || "",
       data.type || "",
+      data.status || "",
       data.name || "",
       data.customer || "",
       data.plate || "",
@@ -493,6 +887,12 @@ window.downloadCSV = async function() {
       data.bonus || 0,
       data.boyfriendShare || 0,
       data.brotherShare || 0,
+      data.thirdShare || 0,
+      data.passThrough || 0,
+      data.passThroughPayer || "",
+      data.passThroughStatus || "",
+      data.passThroughCostMode || "",
+      data.absorbedPassThrough || 0,
       `"${String(data.note || "").replaceAll('"', '""')}"`
     ].join(",") + "\n";
   });
@@ -539,9 +939,9 @@ window.mobileSelectType = function(type) {
   } else {
     document.getElementById("mobileRulesTitle").textContent = "中古車買賣分潤規則";
     document.getElementById("mobileRulesContent").innerHTML = `
-      <div class="rule-item"><strong>1. 先計算車輛實際淨利</strong><p>賣出價格扣掉買入價格、整備成本、其他成本後，才是這台車真正賺到的金額。</p></div>
-      <div class="rule-item"><strong>2. 依投入比例分潤</strong><p>因為每台車的投入金額不同，所以不採用 50/50，而是依照實際出資比例分配。</p></div>
-      <div class="rule-item"><strong>3. 賠錢也依投入比例承擔</strong><p>若車輛最後虧損，則虧損金額也依照投入比例承擔。</p></div>
+      <div class="rule-item"><strong>1. 新增時先是進行中</strong><p>買車當下先記錄投入、買入、整備、其他成本與代收代付，不計算正式分潤。</p></div>
+      <div class="rule-item"><strong>2. 代收代付不列入成本</strong><p>稅金、過戶費、保險等若買家會另外支付，只記錄代墊人與收回狀態，不影響淨利。</p></div>
+      <div class="rule-item"><strong>3. 賣出後再結案</strong><p>車賣出後，到所有紀錄按「結案」，輸入賣出價格，系統才正式計算分潤。</p></div>
     `;
   }
 
@@ -633,112 +1033,58 @@ function mobileCalculateCase() {
 }
 
 function mobileCalculateCar() {
-  const sellPrice = mGetNumber("mCarSellPrice");
+  const data = buildCarDataFromMobile();
 
-  if (sellPrice <= 0) {
-    alert("請輸入賣出價格");
+  if (!data) {
     return;
   }
-
-  const date = mGetValue("mCarDate");
-  const name = mGetValue("mCarName") || "未命名車輛";
-  const buyPrice = mGetNumber("mCarBuyPrice");
-  const repairCost = mGetNumber("mCarRepairCost");
-  const otherCost = mGetNumber("mCarOtherCost");
-  const boyfriendInvest = mGetNumber("mCarBoyfriendInvest");
-  const brotherInvest = mGetNumber("mCarBrotherInvest");
-  const thirdName = mGetValue("mCarThirdName") || "第三投資人";
-  const thirdInvest = mGetNumber("mCarThirdInvest");
-
-  const totalCost = buyPrice + repairCost + otherCost;
-  const profit = sellPrice - totalCost;
-  const totalInvest = boyfriendInvest + brotherInvest + thirdInvest;
-
-  if (totalInvest <= 0) {
-    alert("請輸入李彥伯與李承灃的投入金額");
-    return;
-  }
-
-  const boyfriendRate = boyfriendInvest / totalInvest;
-  const brotherRate = brotherInvest / totalInvest;
-  const thirdRate = thirdInvest / totalInvest;
-
-  const boyfriendShare = profit * boyfriendRate;
-  const brotherShare = profit * brotherRate;
-  const thirdShare = profit * thirdRate;
 
   document.getElementById("mobileResultBoxes").innerHTML = `
-    <div class="result-box"><span>車輛淨利</span><b>${money(profit)}</b></div>
-    <div class="result-box"><span>總投入金額</span><b>${money(totalInvest)}</b></div>
-    <div class="result-box"><span>李彥伯投入比例</span><b>${(boyfriendRate * 100).toFixed(1)}%</b></div>
-    <div class="result-box"><span>李承灃投入比例</span><b>${(brotherRate * 100).toFixed(1)}%</b></div>
-    <div class="result-box"><span>${thirdName} 投入比例</span><b>${(thirdRate * 100).toFixed(1)}%</b></div>
-    <div class="result-box dark"><span>李彥伯分潤</span><b>${money(boyfriendShare)}</b><br></div>
-    <div class="result-box"><span>李承灃分潤</span><b>${money(brotherShare)}</b></div>
-    <div class="result-box"><span>${thirdName} 分潤</span><b>${money(thirdShare)}</b></div>
+    <div class="result-box"><span>案件狀態</span><b>進行中</b></div>
+    <div class="result-box"><span>已知成本</span><b>${money(data.totalCost)}</b></div>
+    <div class="result-box"><span>總投入金額</span><b>${money(data.totalInvest)}</b></div>
+    <div class="result-box"><span>代收代付</span><b>${money(data.passThrough)}</b></div>
+    <div class="result-box dark"><span>李彥伯投入比例</span><b>${(data.boyfriendRate * 100).toFixed(1)}%</b></div>
+    <div class="result-box"><span>李承灃投入比例</span><b>${(data.brotherRate * 100).toFixed(1)}%</b></div>
+    <div class="result-box"><span>${data.thirdName} 投入比例</span><b>${(data.thirdRate * 100).toFixed(1)}%</b></div>
   `;
+
+  const passThroughText = data.passThrough > 0
+    ? `<br>代收代付 = ${money(data.passThrough)}，代墊人：${data.passThroughPayer || "未填"}，狀態：${data.passThroughStatus}<br>此金額不列入成本與分潤。`
+    : "";
 
   document.getElementById("mobileProcess").innerHTML = `
-    <b>計算過程：</b>
-    總成本 = ${money(totalCost)}<br>
-    車輛淨利 = ${money(profit)}<br>
-    總投入金額 = ${money(totalInvest)}<br>
-    李彥伯投入比例 = ${(boyfriendRate * 100).toFixed(1)}%<br>
-    李承灃投入比例 = ${(brotherRate * 100).toFixed(1)}%<br>
-    ${thirdName} 投入比例 = ${(thirdRate * 100).toFixed(1)}%<br><br>
-    李彥伯分潤 = ${money(boyfriendShare)}<br>
-    李承灃分潤 = ${money(brotherShare)}<br>
-    ${thirdName} 分潤 = ${money(thirdShare)}
+    <b>案件進行中：</b>
+    目前先記錄投入與代收代付，尚未計算正式分潤。<br>
+    已知成本 = 買入 ${money(data.buyPrice)} + 整備 ${money(data.repairCost)} + 其他 ${money(data.otherCost)} + 代收代付吸收 ${money(data.absorbedPassThrough)} = ${money(data.totalCost)}<br>
+    ${passThroughText}<br>
+    總投入金額 = 李彥伯 ${money(data.boyfriendInvest)} + 李承灃 ${money(data.brotherInvest)} + ${data.thirdName} ${money(data.thirdInvest)} = ${money(data.totalInvest)}<br>
+    等車輛賣出後，到所有紀錄按「結案」，輸入賣出價格，系統才會正式計算分潤。
   `;
 
-  mobileLastData = {
-    type: "中古車投資",
-    date,
-    name,
-    customer: "",
-    plate: "",
-    sales: "",
-    note: "",
-    buyPrice,
-    repairCost,
-    otherCost,
-    sellPrice,
-    totalCost,
-    profit,
-    fund: 0,
-    bonusBase: 0,
-    bonusRate: 0,
-    bonus: 0,
-    boyfriendInvest,
-    brotherInvest,
-    boyfriendRate,
-    brotherRate,
-    boyfriendShare,
-    brotherShare,
-    thirdName,
-    thirdInvest,
-    thirdRate,
-    thirdShare,
-    createdAt: serverTimestamp()
-  };
-
+  mobileLastData = data;
   mobileShowPanel("mobileResult", 4);
 }
 
 window.mobileSaveRecord = async function() {
   if (!mobileLastData) {
-    alert("請先完成計算");
+    alert("請先完成確認");
     return;
   }
 
+  if (editingCarId) {
+  await updateDoc(doc(db, "profitRecords", editingCarId), mobileLastData);
+  alert("案件已更新");
+  editingCarId = null;
+} else {
   await addDoc(recordsRef, mobileLastData);
   alert("案件已儲存");
+}
 
   mobileLastData = null;
-
   clearMobileForms();
 
-  loadRecords();
+  await loadRecords();
   mobileGoChoose();
 };
 
@@ -757,7 +1103,9 @@ function clearMobileForms() {
   setValue("mCarBuyPrice", "");
   setValue("mCarRepairCost", "");
   setValue("mCarOtherCost", "");
-  setValue("mCarSellPrice", "");
+  setValue("mCarPassThrough", "");
+  setValue("mCarPassThroughPayer", "");
+
   setValue("mCarBoyfriendInvest", "");
   setValue("mCarBrotherInvest", "");
   setValue("mCarThirdName", "");
@@ -772,6 +1120,9 @@ window.mobileShowRecords = async function() {
 async function loadMobileRecords() {
   const q = query(recordsRef, orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
+
+  recordsCache = {};
+
   const summary = document.getElementById("mobileRecordsSummary");
   const list = document.getElementById("mobileRecordsList");
   summary.innerHTML = "";
@@ -790,42 +1141,52 @@ async function loadMobileRecords() {
 
   snapshot.forEach(docItem => {
     const data = docItem.data();
+    recordsCache[docItem.id] = data;
 
     const searchText = [
       data.date,
       data.type,
+      data.status,
       data.name,
       data.customer,
       data.plate,
       data.sales,
       data.note,
+      data.passThrough,
+      data.passThroughPayer,
+      data.passThroughStatus,
       data.profit,
       data.fund,
       data.bonus,
       data.boyfriendShare,
-      data.brotherShare
+      data.brotherShare,
+      data.thirdName,
+      data.thirdShare
     ].join(" ").toLowerCase();
 
     if (mobileKeyword && !searchText.includes(mobileKeyword)) {
       return;
     }
 
-    totalProfit += Number(data.profit || 0);
-    totalFund += Number(data.fund || 0);
-    totalBoyfriend += Number(data.boyfriendShare || 0);
-    totalBrother += Number(data.brotherShare || 0);
+    const isCar = data.type === "中古車投資";
+    const isPending = isCar && (data.status || "進行中") === "進行中";
+
+    if (!isPending) {
+      totalProfit += Number(data.profit || 0);
+      totalFund += Number(data.fund || 0);
+      totalBoyfriend += Number(data.boyfriendShare || 0);
+      totalBrother += Number(data.brotherShare || 0);
+    }
   });
 
   summary.innerHTML = `
-  <div class="mobile-record-summary">
-    <div><span>總淨利</span><b>${money(totalProfit)}</b></div>
-    <div><span>設備基金</span><b>${money(totalFund)}</b></div>
-    <div><span>李彥伯</span><b>${money(totalBoyfriend)}</b></div>
-    <div><span>李承灃</span><b>${money(totalBrother)}</b></div>
-  </div>
-`;
-
-  
+    <div class="mobile-record-summary">
+      <div><span>總淨利</span><b>${money(totalProfit)}</b></div>
+      <div><span>設備基金</span><b>${money(totalFund)}</b></div>
+      <div><span>李彥伯</span><b>${money(totalBoyfriend)}</b></div>
+      <div><span>李承灃</span><b>${money(totalBrother)}</b></div>
+    </div>
+  `;
 
   snapshot.forEach(docItem => {
     const data = docItem.data();
@@ -833,29 +1194,46 @@ async function loadMobileRecords() {
     const searchText = [
       data.date,
       data.type,
+      data.status,
       data.name,
       data.customer,
       data.plate,
       data.sales,
       data.note,
+      data.passThrough,
+      data.passThroughPayer,
+      data.passThroughStatus,
       data.profit,
       data.fund,
       data.bonus,
       data.boyfriendShare,
-      data.brotherShare
+      data.brotherShare,
+      data.thirdName,
+      data.thirdShare
     ].join(" ").toLowerCase();
 
     if (mobileKeyword && !searchText.includes(mobileKeyword)) {
       return;
     }
 
-    const mobileCardClass =
-  data.type === "中古車投資"
-    ? "mobile-record-card mobile-car-record"
-    : "mobile-record-card mobile-case-record";
+    const isCar = data.type === "中古車投資";
+    const isPending = isCar && (data.status || "進行中") === "進行中";
+    const mobileCardClass = isPending
+      ? "mobile-record-card mobile-car-pending-record"
+      : isCar
+        ? "mobile-record-card mobile-car-record"
+        : "mobile-record-card mobile-case-record";
 
-list.innerHTML += `
-  <div class="${mobileCardClass}">
+    const displayStatus = isCar ? (data.status || "進行中") : "-";
+    const statusClass = displayStatus === "進行中" ? "status-pending" : "status-closed";
+    const closeBtn = isPending
+      ? `<button class="mobile-close-btn" onclick="openCloseCarModal('${docItem.id}')">結案</button>`
+      : "";
+
+    const detailId = `mobileDetail_${docItem.id}`;
+
+    list.innerHTML += `
+      <div class="${mobileCardClass}">
         <div class="mobile-record-top">
           <span>${data.type || "-"}</span>
           <small>${data.date || "-"}</small>
@@ -864,30 +1242,132 @@ list.innerHTML += `
         <h3>${data.name || "-"}</h3>
 
         <div class="mobile-record-money">
-          <p><span>客戶</span><b>${data.customer || "-"}</b></p>
-          <p><span>車牌</span><b>${data.plate || "-"}</b></p>
-          <p><span>淨利</span><b>${money(data.profit)}</b></p>
-          <p><span>設備基金</span><b>${money(data.fund)}</b></p>
-          <p><span>業務獎金</span><b>${money(data.bonus)}</b></p>
-          <p><span>李彥伯</span><b>${money(data.boyfriendShare)}</b></p>
-          <p><span>李承灃</span><b>${money(data.brotherShare)}</b></p>
-          ${data.thirdName ? `
-            <p><span>${data.thirdName}</span><b>${money(data.thirdShare)}</b></p>
+          ${isCar ? `<p><span>狀態</span><b><span class="status-badge ${statusClass}">${displayStatus}</span></b></p>` : ""}
+          ${!isCar ? `<p><span>客戶</span><b>${data.customer || "-"}</b></p>` : ""}
+          ${!isCar ? `<p><span>車牌</span><b>${data.plate || "-"}</b></p>` : ""}
+
+          <p><span>淨利</span><b>${isPending ? "尚未結案" : money(data.profit)}</b></p>
+
+          ${!isCar ? `
+            <p><span>設備基金</span><b>${money(data.fund)}</b></p>
+            <p><span>業務獎金</span><b>${money(data.bonus)}</b></p>
           ` : ""}
+
+          ${isCar ? `
+            <p><span>李彥伯</span><b>${isPending ? "尚未結案" : money(data.boyfriendShare)}</b></p>
+            <p><span>李承灃</span><b>${isPending ? "尚未結案" : money(data.brotherShare)}</b></p>
+            ${data.thirdName ? `<p><span>${data.thirdName}</span><b>${isPending ? "尚未結案" : money(data.thirdShare)}</b></p>` : ""}
+          ` : `
+            <p><span>李彥伯</span><b>${money(data.boyfriendShare)}</b></p>
+            <p><span>李承灃</span><b>${money(data.brotherShare)}</b></p>
+          `}
         </div>
 
+        ${isCar ? `
+          <button class="mobile-detail-toggle" onclick="toggleMobileRecordDetail('${detailId}', this)">
+            展開詳細資料
+          </button>
+
+          <div id="${detailId}" class="mobile-record-detail hidden">
+            <p><span>買入價格</span><b>${money(data.buyPrice)}</b></p>
+            <p><span>整備成本</span><b>${money(data.repairCost)}</b></p>
+            <p><span>其他成本</span><b>${money(data.otherCost)}</b></p>
+            <p><span>總投入金額</span><b>${money(data.totalInvest)}</b></p>
+            ${data.passThrough ? `<p><span>代收代付</span><b>${money(data.passThrough)}</b></p>` : ""}
+            ${data.passThrough ? `<p><span>代墊狀態</span><b>${data.passThroughPayer || "未填"}｜${data.passThroughStatus || "未結算"}</b></p>` : ""}
+            ${data.passThrough ? `<p><span>是否列入成本</span><b>${data.passThroughCostMode || "結案時決定"}</b></p>` : ""}
+            ${data.absorbedPassThrough ? `<p><span>吸收成本</span><b>${money(data.absorbedPassThrough)}</b></p>` : ""}
+          </div>
+        ` : ""}
+
         ${data.note ? `
-  <div class="mobile-note">
-    <strong>客戶備註：</strong>
-    ${data.note}
-  </div>
-` : ""}
+          <div class="mobile-note">
+            <strong>客戶備註：</strong>
+            ${data.note}
+          </div>
+        ` : ""}
+
+        ${isPending ? `
+          <button class="mobile-edit-btn" onclick="editCarRecord('${docItem.id}')">編輯</button>
+          <button class="mobile-close-btn" onclick="openCloseCarModal('${docItem.id}')">結案</button>
+        ` : ""}
 
         <button class="mobile-delete-btn" onclick="deleteRecord('${docItem.id}')">刪除紀錄</button>
       </div>
     `;
+
   });
 }
+
+
+window.toggleMobileRecordDetail = function(detailId, button) {
+  const detail = document.getElementById(detailId);
+
+  if (!detail) {
+    return;
+  }
+
+  const isHidden = detail.classList.contains("hidden");
+
+  detail.classList.toggle("hidden", !isHidden);
+
+  if (button) {
+    button.textContent = isHidden ? "收合詳細資料" : "展開詳細資料";
+  }
+};
+
 window.loadRecords = loadRecords;
 window.loadMobileRecords = loadMobileRecords;
+window.editCarRecord = function(id) {
+  const data = recordsCache[id];
+
+  if (!data) {
+    alert("找不到這筆紀錄");
+    return;
+  }
+
+  editingCarId = id;
+  mobileType = "car";
+
+  const isMobile = window.innerWidth <= 900;
+
+  if (isMobile) {
+    setValue("mCarDate", data.date);
+    setValue("mCarName", data.name);
+    setValue("mCarBuyPrice", data.buyPrice);
+    setValue("mCarRepairCost", data.repairCost);
+    setValue("mCarOtherCost", data.otherCost);
+    setValue("mCarPassThrough", data.passThrough);
+    setValue("mCarPassThroughPayer", data.passThroughPayer);
+
+    setValue("mCarBoyfriendInvest", data.boyfriendInvest);
+    setValue("mCarBrotherInvest", data.brotherInvest);
+    setValue("mCarThirdName", data.thirdName);
+    setValue("mCarThirdInvest", data.thirdInvest);
+
+    document.getElementById("mobileFormTitle").textContent = "編輯中古車案件";
+    document.getElementById("mobileCaseForm").classList.add("hidden");
+    document.getElementById("mobileCarForm").classList.remove("hidden");
+
+    mobileShowPanel("mobileForm", 3);
+    return;
+  }
+
+  showPage("carPage", document.querySelectorAll(".nav button")[1]);
+
+  setValue("carDate", data.date);
+  setValue("carName", data.name);
+  setValue("carBuyPrice", data.buyPrice);
+  setValue("carRepairCost", data.repairCost);
+  setValue("carOtherCost", data.otherCost);
+  setValue("carPassThrough", data.passThrough);
+  setValue("carPassThroughPayer", data.passThroughPayer);
+
+  setValue("carBoyfriendInvest", data.boyfriendInvest);
+  setValue("carBrotherInvest", data.brotherInvest);
+  setValue("carThirdName", data.thirdName);
+  setValue("carThirdInvest", data.thirdInvest);
+
+  document.querySelector("#carPage .btn-blue").textContent = "更新案件";
+};
 loadRecords();
