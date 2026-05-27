@@ -1269,3 +1269,15 @@ select[id$="PassThroughCostMode"] {
   color: #64748b;
   cursor: not-allowed;
 }
+
+@media (max-width: 900px) {
+  .modal-card {
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+
+  #closeCarFormulaPreview {
+    max-height: 38vh;
+    overflow-y: auto;
+  }
+}
