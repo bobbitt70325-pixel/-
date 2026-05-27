@@ -942,6 +942,7 @@ window.mobileSelectType = function(type) {
       <div class="rule-item"><strong>1. 新增時先是進行中</strong><p>買車當下先記錄投入、買入、整備、其他成本與代收代付，不計算正式分潤。</p></div>
       <div class="rule-item"><strong>2. 代收代付不列入成本</strong><p>稅金、過戶費、保險等若買家會另外支付，只記錄代墊人與收回狀態，不影響淨利。</p></div>
       <div class="rule-item"><strong>3. 賣出後再結案</strong><p>車賣出後，到所有紀錄按「結案」，輸入賣出價格，系統才正式計算分潤。</p></div>
+      <div class="rule-item"><strong>4. 依投入比例分潤</strong><p>車輛淨利依照三位投資人的投入比例分配；若虧損，也依比例承擔。</p></div>
     `;
   }
 
